@@ -1,0 +1,7 @@
+[submodule "3rd/DirectXMath"]
+	path = 3rd/DirectXMath
+	url = https://github.com/microsoft/DirectXMath.git
+[submodule "3rd/Compressonator"]
+	path = 3rd/Compressonator
+	url = https://github.com/jsbourdon/Compressonator.git
+	branch = CMP_GetMipLevel_Fix
