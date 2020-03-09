@@ -55,7 +55,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     int value0 = worker0.Wait();
     int value1 = worker1.Wait();
 
-    WindowHandle hwnd = factory::CreateNewWindow(reinterpret_cast<lwgl::AppHandle>(hInstance), 1920, 1080);
+    WindowHandle hwnd = factory::CreateNewWindow(reinterpret_cast<lwgl::AppHandle>(hInstance), 1920, 1080, L"Salvation");
     factory::DisplayWindow(hwnd);
 
     GpuDevice *pDevice = GpuDevice::CreateDevice();

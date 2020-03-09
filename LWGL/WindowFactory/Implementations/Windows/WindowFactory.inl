@@ -41,7 +41,7 @@ static void RegisterNewClass(HINSTANCE owner)
     RegisterClassExW(&wcex);
 }
 
-WindowHandle lwgl::factory::CreateNewWindow(AppHandle owner, uint32_t width, uint32_t height)
+WindowHandle lwgl::factory::CreateNewWindow(AppHandle owner, uint32_t width, uint32_t height, const wchar_t* pTitle)
 {
     HINSTANCE ownerHdl = reinterpret_cast<HINSTANCE>(owner);
 
@@ -50,7 +50,7 @@ WindowHandle lwgl::factory::CreateNewWindow(AppHandle owner, uint32_t width, uin
         RegisterNewClass(ownerHdl);
     }
 
-    HWND hWnd = CreateWindowW(g_WindowData.m_windowClass, L"LWGL", WS_OVERLAPPEDWINDOW,
+    HWND hWnd = CreateWindowW(g_WindowData.m_windowClass, pTitle, WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, ownerHdl, nullptr);
 
     return reinterpret_cast<WindowHandle>(hWnd);
