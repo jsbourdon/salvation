@@ -21,7 +21,8 @@ static_assert(ARRAY_SIZE(s_ComponentTypeByteSizes) == static_cast<size_t>(Compon
 
 uint32_t AssetDatabase::ComponentTypeByteSize(ComponentType type)
 {
-    SALVATION_ASSERT(static_cast<int32_t>(type) >= 0 && static_cast<int32_t>(type) < static_cast<int32_t>(ComponentType::Count), "");
+    SALVATION_ASSERT(static_cast<int32_t>(type) >= 0 && static_cast<int32_t>(type) < static_cast<int32_t>(ComponentType::Count), 
+        "AssetDatabase::ComponentTypeByteSize: Invalid component type");
     return static_cast<uint32_t>(s_ComponentTypeByteSizes[static_cast<size_t>(type)]);
 }
 

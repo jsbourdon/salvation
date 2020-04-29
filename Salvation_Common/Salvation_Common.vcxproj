@@ -229,6 +229,7 @@
     <ClCompile Include="SystemInfo\SystemInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="FileSystem\FileSystem.inl" />
     <None Include="Memory\Implementations\Windows\VirtualMemoryAllocator.inl" />
     <None Include="SystemInfo\Implementations\Windows\SystemInfo.inl" />
   </ItemGroup>

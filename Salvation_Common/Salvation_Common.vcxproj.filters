@@ -49,11 +49,11 @@
     <Filter Include="Source Files\Assets">
       <UniqueIdentifier>{2c09e6b8-9ffc-491c-b627-387719c2ade3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="FileSystem">
-      <UniqueIdentifier>{765d9e14-f618-4cf8-afc8-372a5ba15740}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\SQLite">
       <UniqueIdentifier>{7d169afd-26f0-4b01-b5fb-ea50e2337ce6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\FileSystem">
+      <UniqueIdentifier>{765d9e14-f618-4cf8-afc8-372a5ba15740}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -118,7 +118,7 @@
       <Filter>Source Files\Memory</Filter>
     </ClInclude>
     <ClInclude Include="FileSystem\FileSystem.h">
-      <Filter>FileSystem</Filter>
+      <Filter>Source Files\FileSystem</Filter>
     </ClInclude>
     <ClInclude Include="Assets\AssetDatabase.h">
       <Filter>Source Files\Assets</Filter>
@@ -153,7 +153,7 @@
       <Filter>Source Files\SystemInfo</Filter>
     </ClCompile>
     <ClCompile Include="FileSystem\FileSystem.cpp">
-      <Filter>FileSystem</Filter>
+      <Filter>Source Files\FileSystem</Filter>
     </ClCompile>
     <ClCompile Include="Assets\AssetDatabase.cpp">
       <Filter>Source Files\Assets</Filter>
@@ -171,6 +171,9 @@
     </None>
     <None Include="SystemInfo\Implementations\Windows\SystemInfo.inl">
       <Filter>Source Files\SystemInfo\Implementations\Windows</Filter>
+    </None>
+    <None Include="FileSystem\FileSystem.inl">
+      <Filter>Source Files\FileSystem</Filter>
     </None>
   </ItemGroup>
 </Project>

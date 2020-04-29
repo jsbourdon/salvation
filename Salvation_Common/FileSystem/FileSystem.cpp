@@ -5,7 +5,7 @@
 using namespace salvation::filesystem;
 using namespace salvation::memory;
 
-bool salvation::filesystem::FileExists(const char *pFilePath)
+bool salvation::filesystem::FileExists(const char* pFilePath)
 {
     FILE* pFile;
 
@@ -14,11 +14,11 @@ bool salvation::filesystem::FileExists(const char *pFilePath)
         fclose(pFile);
         return true;
     }
-    
+
     return false;
 }
 
-bool salvation::filesystem::DirectoryExists(const char *pDirectoryPath)
+bool salvation::filesystem::DirectoryExists(const char* pDirectoryPath)
 {
     struct stat dirStat;
     if (stat(pDirectoryPath, &dirStat) >= 0)
@@ -29,7 +29,7 @@ bool salvation::filesystem::DirectoryExists(const char *pDirectoryPath)
     return false;
 }
 
-bool salvation::filesystem::CreateDirectory(const char *pDirectoryPath)
+bool salvation::filesystem::CreateDirectory(const char* pDirectoryPath)
 {
     bool hasSuccessfullyCreateDirectory = true;
 
@@ -75,14 +75,14 @@ str_smart_ptr&& salvation::filesystem::ExtractDirectoryPath(const char* pFilePat
     return std::move(dirPath);
 }
 
-str_smart_ptr&& salvation::filesystem::AppendPaths(const char *pDirectoryPath, const char *pFilePath)
+str_smart_ptr&& salvation::filesystem::AppendPaths(const char* pDirectoryPath, const char* pFilePath)
 {
     size_t dirPathLen = strlen(pDirectoryPath);
     size_t filePathLen = strlen(pFilePath);
 
     size_t destFilePathLen = dirPathLen + filePathLen;
     str_smart_ptr destFilePath = ThreadHeapAllocator::Allocate(destFilePathLen);
-    
+
     destFilePath[destFilePathLen] = 0;
     memcpy(destFilePath, pDirectoryPath, dirPathLen);
     memcpy(destFilePath + dirPathLen, pFilePath, filePathLen);

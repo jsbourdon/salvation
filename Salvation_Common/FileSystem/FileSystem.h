@@ -8,11 +8,16 @@ namespace salvation
 {
     namespace filesystem
     {
-        bool FileExists(const char *pFilePath);
-        bool DirectoryExists(const char *pDirectoryPath);
+        bool FileExists(const char* pFilePath);
+        bool DirectoryExists(const char* pDirectoryPath);
         bool CreateDirectory(const char* pDirectoryPath);
 
-        str_smart_ptr&& ExtractDirectoryPath(const char *pFilePath);
-        str_smart_ptr &&AppendPaths(const char *pDirectoryPath, const char *pFilePath);
+        template<typename AllocatorType>
+        uint8_t* ReadFileContent(const char* pSrcPath, size_t& o_FileSize);
+
+        str_smart_ptr&& ExtractDirectoryPath(const char* pFilePath);
+        str_smart_ptr&& AppendPaths(const char* pDirectoryPath, const char* pFilePath);
     }
 }
+
+#include "Salvation_Common/FileSystem/FileSystem.inl"
