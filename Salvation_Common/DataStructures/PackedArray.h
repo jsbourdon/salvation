@@ -93,7 +93,7 @@ PackedArray<T>::~PackedArray()
 template<typename T>
 salvation::Handle PackedArray<T>::Add(T &value)
 {
-    SALVATION_ASSERT(m_NextIndex < m_Lookup.Capacity(), "PackedArray<T>::Add: Capacity overflow.");
+    SALVATION_ASSERT_MSG(m_NextIndex < m_Lookup.Capacity(), "PackedArray<T>::Add: Capacity overflow.");
 
     uint32_t newIndex = m_NextIndex++;
     Handle newHdl = m_Lookup.Add(newIndex);
@@ -106,7 +106,7 @@ salvation::Handle PackedArray<T>::Add(T &value)
 template<typename T>
 void PackedArray<T>::Remove(const Handle &handle)
 {
-    SALVATION_ASSERT(m_NextIndex > 0, "PackedArray<T>::Remove: Removing from empty array");
+    SALVATION_ASSERT_MSG(m_NextIndex > 0, "PackedArray<T>::Remove: Removing from empty array");
 
     --m_NextIndex;
     uint32_t valueIndex = m_Lookup.Remove(handle);

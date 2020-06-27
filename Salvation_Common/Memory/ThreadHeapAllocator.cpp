@@ -58,7 +58,7 @@ void* ThreadHeapAllocator::AllocateInternal(size_t byteSize)
 
     uint32_t requiredPageCount = static_cast<uint32_t>(Align(byteSize, m_SystemPageSize)) / m_SystemPageSize;
     uint32_t newNextPageIndex = m_NextPageIndex + requiredPageCount;
-    SALVATION_ASSERT(requiredPageCount <= m_TotalPageCount, "ThreadHeapAllocator: Requested allocation exceeds allocator total byte size.");
+    SALVATION_ASSERT_MSG(requiredPageCount <= m_TotalPageCount, "ThreadHeapAllocator: Requested allocation exceeds allocator total byte size.");
     
     if (newNextPageIndex < m_CommittedPageCount)
     {
@@ -89,14 +89,14 @@ void* ThreadHeapAllocator::AllocateInternal(size_t byteSize)
         }
     }
 
-    SALVATION_ASSERT(pAllocation, "ThreadHeapAllocator: Out of Memory");
+    SALVATION_ASSERT_MSG(pAllocation, "ThreadHeapAllocator: Out of Memory");
 
     return pAllocation;
 }
 
 void ThreadHeapAllocator::ReleaseInternal(void *pMemory)
 {
-    SALVATION_ASSERT(
+    SALVATION_ASSERT_MSG(
         (reinterpret_cast<uintptr_t>(pMemory) >= m_MemoryPool) && 
         (reinterpret_cast<uintptr_t>(pMemory) < (m_MemoryPool + m_TotalPageCount * m_SystemPageSize)),
         "ThreadHeapAllocator::ReleaseInternal: given address was not allocated from this allocator.");
@@ -121,7 +121,7 @@ void ThreadHeapAllocator::DefragInternal()
 void ThreadHeapAllocator::CommitMorePages(uint32_t pageCount)
 {
     uint32_t reservedPageCount = m_TotalPageCount - m_CommittedPageCount;
-    SALVATION_ASSERT(pageCount <= reservedPageCount, 
+    SALVATION_ASSERT_MSG(pageCount <= reservedPageCount, 
         "ThreadHeapAllocator::CommitMorePages: Cannot commit requested number of pages. Not enough reserved memory");
 
     size_t newCommittedPageCount = std::min(std::max(pageCount, m_CommittedPageCount * 2), reservedPageCount);

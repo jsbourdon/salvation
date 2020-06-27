@@ -29,8 +29,8 @@ VirtualMemoryAllocator::VirtualMemoryAllocator()
 
 void* VirtualMemoryAllocator::Allocate(size_t byteSize, size_t commitByteSize, size_t alignment)
 {
-    SALVATION_ASSERT(alignment <= s_Allocator.m_AllocationPageSize, "Unsupported alignment");
-    SALVATION_ASSERT(commitByteSize <= byteSize, "Invalid commit byte size");
+    SALVATION_ASSERT_MSG(alignment <= s_Allocator.m_AllocationPageSize, "Unsupported alignment");
+    SALVATION_ASSERT_MSG(commitByteSize <= byteSize, "Invalid commit byte size");
 
     std::unique_lock<std::mutex> lock(s_Allocator.m_Mutex);
 
@@ -72,8 +72,8 @@ void VirtualMemoryAllocator::Release(void *pMemory)
     std::unique_lock<std::mutex> lock(s_Allocator.m_Mutex);
     
     VMHeader *pHeader = (reinterpret_cast<VMHeader*>(pMemory) - 1);
-    SALVATION_ASSERT(pHeader->m_Marker == MARKER, "Invalid address sent to VirtualMemoryAllocator::Release");
-    SALVATION_ASSERT(pHeader->m_Next == nullptr, "Releasing already released memory");
+    SALVATION_ASSERT_MSG(pHeader->m_Marker == MARKER, "Invalid address sent to VirtualMemoryAllocator::Release");
+    SALVATION_ASSERT_MSG(pHeader->m_Next == nullptr, "Releasing already released memory");
 
     if (s_Allocator.m_FreeTail)
     {
@@ -101,8 +101,8 @@ void VirtualMemoryAllocator::ForceReleaseToOS(void *pMemory)
     size_t allocationStartOffset = Align(sizeof(VMHeader), header.m_Alignment);
     void *pAllocationAddress = reinterpret_cast<uint8_t*>(pMemory) - allocationStartOffset;
 
-    SALVATION_ASSERT(header.m_Marker == MARKER, "Invalid address sent to VirtualMemoryAllocator::Release");
-    SALVATION_ASSERT(header.m_Next == nullptr, "Releasing already released memory");
+    SALVATION_ASSERT_MSG(header.m_Marker == MARKER, "Invalid address sent to VirtualMemoryAllocator::Release");
+    SALVATION_ASSERT_MSG(header.m_Next == nullptr, "Releasing already released memory");
 
     NativeRelease(pAllocationAddress);
 }
@@ -121,7 +121,7 @@ void VirtualMemoryAllocator::Decommit(void *pMemory, size_t size)
 
 void VirtualMemoryAllocator::ForceReleaseToOS(VMHeader *pHeader)
 {
-    SALVATION_ASSERT(pHeader->m_Marker == MARKER, "Invalid address sent to VirtualMemoryAllocator::Release");
+    SALVATION_ASSERT_MSG(pHeader->m_Marker == MARKER, "Invalid address sent to VirtualMemoryAllocator::Release");
 
     uint8_t *pMemory = reinterpret_cast<uint8_t*>(pHeader + 1);
     size_t allocationStartOffset = Align(sizeof(VMHeader), pHeader->m_Alignment);

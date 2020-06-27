@@ -24,13 +24,13 @@ void FrameMemoryAllocator::Init(size_t poolByteSize)
 
 void* FrameMemoryAllocator::Allocate(size_t byteSize, size_t alignment)
 {
-    SALVATION_ASSERT(alignment <= s_MaxAlignment, "FrameMemoryAllocator::Allocate: Maximum supported alignment exceeded.");
+    SALVATION_ASSERT_MSG(alignment <= s_MaxAlignment, "FrameMemoryAllocator::Allocate: Maximum supported alignment exceeded.");
 
     size_t allocByteSize = Align(byteSize, alignment);
     size_t alignedOffset = Align(m_NextByte, alignment);
     m_NextByte = alignedOffset + allocByteSize;
 
-    SALVATION_ASSERT(m_NextByte <= m_PoolByteSize, "Over allocation for this frame");
+    SALVATION_ASSERT_MSG(m_NextByte <= m_PoolByteSize, "Over allocation for this frame");
 
     return m_MemoryPool + alignedOffset;
 }

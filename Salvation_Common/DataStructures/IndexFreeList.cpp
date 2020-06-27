@@ -48,7 +48,7 @@ IndexFreeList::~IndexFreeList()
 
 Handle IndexFreeList::Add(uint32_t index)
 {
-    SALVATION_ASSERT(m_FreeListIndex < m_Capacity && m_Count < m_Capacity, "Free list is full");
+    SALVATION_ASSERT_MSG(m_FreeListIndex < m_Capacity && m_Count < m_Capacity, "Free list is full");
 
     ++m_Count;
 
@@ -66,7 +66,7 @@ Handle IndexFreeList::Add(uint32_t index)
 
 uint32_t IndexFreeList::Remove(const Handle &handle)
 {
-    SALVATION_ASSERT(ValidateHandle(handle), "IndexFreeList::Remove: Invalid handle. Most probably already removed");
+    SALVATION_ASSERT_MSG(ValidateHandle(handle), "IndexFreeList::Remove: Invalid handle. Most probably already removed");
 
     --m_Count;
 
@@ -83,14 +83,14 @@ uint32_t IndexFreeList::Remove(const Handle &handle)
 
 uint32_t IndexFreeList::Get(const Handle &handle) const
 {
-    SALVATION_ASSERT(ValidateHandle(handle), "IndexFreeList::Get: Invalid handle.");
+    SALVATION_ASSERT_MSG(ValidateHandle(handle), "IndexFreeList::Get: Invalid handle.");
     Item &item = m_Items[handle];
     return static_cast<uint32_t>(item.m_Handle);
 }
 
 void IndexFreeList::Update(const Handle &handle, uint32_t index)
 {
-    SALVATION_ASSERT(ValidateHandle(handle), "IndexFreeList::Update: Invalid handle.");
+    SALVATION_ASSERT_MSG(ValidateHandle(handle), "IndexFreeList::Update: Invalid handle.");
     Item &item = m_Items[handle];
     item.m_Handle.SetValue(index);
 }

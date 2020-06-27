@@ -64,7 +64,7 @@ namespace salvation
 
         void SetValue(ValueType value)
         {
-            SALVATION_ASSERT(value == (value & s_ValueMask), "Handle::SetValue: value is too high to allow for storing generation in debug mode");
+            SALVATION_ASSERT_MSG(value == (value & s_ValueMask), "Handle::SetValue: value is too high to allow for storing generation in debug mode");
             m_Value = value | (m_Value & ~s_ValueMask);
         }
 #else

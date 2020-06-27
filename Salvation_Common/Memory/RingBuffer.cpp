@@ -28,7 +28,7 @@ RingBuffer::~RingBuffer()
 
 void* RingBuffer::Allocate(size_t byteSize, size_t alignment)
 {
-    SALVATION_ASSERT(Align(byteSize, alignment) <= (m_RingEnd - m_RingStart), 
+    SALVATION_ASSERT_MSG(Align(byteSize, alignment) <= (m_RingEnd - m_RingStart), 
         "RingBuffer::Allocate: Requested aligned allocation larger than total buffer size");
 
     uintptr_t nextAddr = salvation::memory::Align(m_NextAddr, alignment);
@@ -36,7 +36,7 @@ void* RingBuffer::Allocate(size_t byteSize, size_t alignment)
     nextAddr = endAddr >= m_RingEnd ? m_RingStart : nextAddr;
     m_NextAddr = nextAddr + byteSize;
 
-    SALVATION_ASSERT(m_NextAddr <= m_FrameStart || nextAddr < m_NextAddr, "RingBuffer::Allocate: Overallocation for this frame");
+    SALVATION_ASSERT_MSG(m_NextAddr <= m_FrameStart || nextAddr < m_NextAddr, "RingBuffer::Allocate: Overallocation for this frame");
 
     return reinterpret_cast<void*>(nextAddr);
 }

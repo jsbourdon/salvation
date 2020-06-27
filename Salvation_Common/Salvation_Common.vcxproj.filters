@@ -126,6 +126,12 @@
     <ClInclude Include="sqlite\sqlite3.h">
       <Filter>Source Files\SQLite</Filter>
     </ClInclude>
+    <ClInclude Include="Assets\PackedData.h">
+      <Filter>Source Files\Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\SubAllocator.h">
+      <Filter>Source Files\Memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -163,6 +169,9 @@
     </ClCompile>
     <ClCompile Include="sqlite\sqlite3.c">
       <Filter>Source Files\SQLite</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\SubAllocator.cpp">
+      <Filter>Source Files\Memory</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

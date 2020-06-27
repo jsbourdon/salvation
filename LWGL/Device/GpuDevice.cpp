@@ -46,7 +46,7 @@ void GpuDevice::DestroyDevice(GpuDevice *pDevice)
 
 CommandQueueHandle GpuDevice::CreateCommandQueue(CommandQueueType type)
 {
-    SALVATION_ASSERT(type == CommandQueueType::Graphic, "Unsupported Command Queue type");
+    SALVATION_ASSERT_MSG(type == CommandQueueType::Graphic, "Unsupported Command Queue type");
     return Handle_NULL;
 }
 

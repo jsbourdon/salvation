@@ -8,7 +8,7 @@ namespace salvation
 {
     namespace asset
     {
-        enum class VertexAttribute
+        enum class VertexAttribute : size_t
         {
             Position,
             Color,
@@ -21,28 +21,22 @@ namespace salvation
 
         struct VertexStream
         {
-            Buffer          m_Buffer;
-            size_t          m_Offset;
-            size_t          m_Size;
-            VertexAttribute m_Attribute;
+            Buffer          m_buffer;
+            VertexAttribute m_attribute;
         };
 
         struct SubMesh
         {
-            Buffer          m_IndexBuffer;
-            size_t          m_IndexBufferOffset;
-            size_t          m_IndexBufferSize;
-
-            VertexStream*   m_pVertexStreams;
-            uint32_t        m_VertexStreamCount;
-
-            Material        m_Material;
+            Buffer          m_indexBuffer;
+            size_t          m_vertexStreamCount;
+            Material        m_material;
+            VertexStream    m_vertexStreams[1];
         };
 
         struct Mesh
         {
-            SubMesh*    m_pSubMeshes;
-            uint32_t    m_SubMeshCount;
+            size_t      m_subMeshCount;
+            SubMesh     m_subMeshes[1];
         };
     }
 }

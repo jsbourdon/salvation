@@ -11,7 +11,7 @@ namespace salvation
         {
             // #todo Many more properties to add in the near future
 
-            Texture m_DiffuseTexture;
+            Texture m_diffuseTexture;
         };
     }
 }

@@ -21,9 +21,10 @@ namespace salvation
 
         struct Texture
         {
-            void*           m_pData;
-            size_t          m_ByteSize;
-            TextureFormat   m_Format;
+            size_t          m_packedDataId;
+            size_t          m_byteOffset { 0 };
+            size_t          m_byteSize;
+            TextureFormat   m_format;
         };
     }
 }

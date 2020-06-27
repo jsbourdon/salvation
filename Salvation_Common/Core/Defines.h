@@ -31,8 +31,9 @@
             {                                                                                                                           \
                 char tmp[1024];                                                                                                         \
                 sprintf_s(tmp, ARRAY_SIZE(tmp), "Statement %s failed with HRESULT %lX: %ls", #x, hr, _com_error(hr).ErrorMessage());    \
-                int selection = MessageBoxA(NULL, tmp, "COM Call Failed", MB_OKCANCEL | MB_ICONERROR | MB_TASKMODAL);                   \
-                if (selection == IDCANCEL) DebugBreak();                                                                                \
+                int selection = MessageBoxA(NULL, tmp, "Assert", MB_ABORTRETRYIGNORE | MB_ICONERROR | MB_TASKMODAL);                    \
+                if (selection == IDRETRY) DebugBreak();                                                                                 \
+                else if (selection == IDABORT) exit(1);                                                                                 \
                 return v;                                                                                                               \
             }                                                                                                                           \
         }
@@ -51,19 +52,25 @@
     #define CHECK_HRESULT_RETURN_VALUE(x, v) CHECK_HRESULT_RETURN_VALUE_INTERNAL(hr_##__FILE__##__LINE__, x, v)
 
     #ifdef _DEBUG
-        #define SALVATION_ASSERT(x, msg)                                                                                     \
+        #define SALVATION_ASSERT_MSG(x, msg)                                                                            \
         {                                                                                                               \
             if (!(x))                                                                                                   \
             {                                                                                                           \
                 char tmp[1024];                                                                                         \
                 sprintf_s(tmp, ARRAY_SIZE(tmp), "Assertion failed: %s\n%s", #x, msg);                                   \
                 printf_s("%s", tmp);                                                                                    \
-                int selection = MessageBoxA(NULL, tmp, "COM Call Failed", MB_OKCANCEL | MB_ICONERROR | MB_TASKMODAL);   \
-                if (selection == IDCANCEL) DebugBreak();                                                                \
+                int selection = MessageBoxA(NULL, tmp, "Assert", MB_ABORTRETRYIGNORE | MB_ICONERROR | MB_TASKMODAL);    \
+                if (selection == IDRETRY) DebugBreak();                                                                 \
+                else if (selection == IDABORT) exit(1);                                                                 \
             }                                                                                                           \
         }
+
+        #define SALVATION_ASSERT(x) SALVATION_ASSERT_MSG(x, "")
+        #define SALVATION_ASSERT_ALWAYS_EXEC(x) SALVATION_ASSERT(x)
     #else
-        #define SALVATION_ASSERT(x, msg)
+        #define SALVATION_ASSERT_MSG(x, msg)
+        #define SALVATION_ASSERT(x)
+        #define SALVATION_ASSERT_ALWAYS_EXEC(x) (x)
     #endif
 
 #endif

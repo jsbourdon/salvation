@@ -12,6 +12,7 @@
 #include "Salvation_Common/Memory/VirtualMemoryAllocator.h"
 #include "Salvation_Common/Memory/ThreadHeapAllocator.h"
 #include "Salvation_Common/Threading/WorkerThread.h"
+#include "Salvation_Common/Assets/AssetDatabase.h"
 #include "LWGL/Device/GfxPlatform.h"
 #include "LWGL/Device/GpuDevice.h"
 
@@ -19,6 +20,7 @@ using namespace lwgl;
 using namespace lwgl::external;
 using namespace salvation::memory;
 using namespace salvation::threading;
+using namespace salvation::asset;
 using namespace std::chrono_literals;
 
 static int WorkerFunction(int iterationCount)
@@ -60,6 +62,12 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     GpuDevice *pDevice = GpuDevice::CreateDevice();
     
+    // Assets loading
+    {
+        AssetDatabase assetDb;
+        assetDb.LoadMetadata("D:\\Temp\\Assets\\", "AssetsDB.db");
+    }
+
     while (!lwgl::events::PumpMessages())
     {
         std::this_thread::sleep_for(100ms);

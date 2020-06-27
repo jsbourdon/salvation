@@ -57,9 +57,13 @@ namespace salvation
             AssetDatabase();
             ~AssetDatabase();
 
-            bool LoadMetadata(const char *pFilePath);
+            bool LoadMetadata(const char* pFolderPath, const char* pDbFileName);
 
             static uint32_t ComponentTypeByteSize(ComponentType type);
+
+        private:
+
+            static size_t ComputeRequiredMetadataByteSize(sqlite3* pDb);
         };
     }
 }
