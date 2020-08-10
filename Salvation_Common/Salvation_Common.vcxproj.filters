@@ -55,6 +55,9 @@
     <Filter Include="Source Files\FileSystem">
       <UniqueIdentifier>{765d9e14-f618-4cf8-afc8-372a5ba15740}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Containers">
+      <UniqueIdentifier>{0efb9dbc-cc8e-4374-83e5-bf716e3346f9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -102,16 +105,10 @@
     <ClInclude Include="SystemInfo\SystemInfo.h">
       <Filter>Source Files\SystemInfo</Filter>
     </ClInclude>
-    <ClInclude Include="Assets\Buffer.h">
-      <Filter>Source Files\Assets</Filter>
-    </ClInclude>
     <ClInclude Include="Assets\Texture.h">
       <Filter>Source Files\Assets</Filter>
     </ClInclude>
     <ClInclude Include="Assets\Mesh.h">
-      <Filter>Source Files\Assets</Filter>
-    </ClInclude>
-    <ClInclude Include="Assets\Material.h">
       <Filter>Source Files\Assets</Filter>
     </ClInclude>
     <ClInclude Include="Memory\ThreadHeapSmartPointer.h">
@@ -126,11 +123,11 @@
     <ClInclude Include="sqlite\sqlite3.h">
       <Filter>Source Files\SQLite</Filter>
     </ClInclude>
-    <ClInclude Include="Assets\PackedData.h">
-      <Filter>Source Files\Assets</Filter>
-    </ClInclude>
     <ClInclude Include="Memory\SubAllocator.h">
       <Filter>Source Files\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Containers\Vector.h">
+      <Filter>Source Files\Containers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -183,6 +180,9 @@
     </None>
     <None Include="FileSystem\FileSystem.inl">
       <Filter>Source Files\FileSystem</Filter>
+    </None>
+    <None Include="Containers\Vector.inl">
+      <Filter>Source Files\Containers</Filter>
     </None>
   </ItemGroup>
 </Project>

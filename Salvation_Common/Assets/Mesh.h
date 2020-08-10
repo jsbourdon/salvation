@@ -1,14 +1,12 @@
 #pragma once
 
 #include <stdint.h>
-#include "Buffer.h"
-#include "Material.h"
 
 namespace salvation
 {
     namespace asset
     {
-        enum class VertexAttribute : size_t
+        enum class VertexAttribute : uint32_t
         {
             Position,
             Color,
@@ -21,21 +19,22 @@ namespace salvation
 
         struct VertexStream
         {
-            Buffer          m_buffer;
             VertexAttribute m_attribute;
+            uint32_t m_stride;
+            uint64_t m_byteSize;
+            uint64_t m_byteOffset;
         };
 
         struct SubMesh
         {
-            Buffer          m_indexBuffer;
-            size_t          m_vertexStreamCount;
-            Material        m_material;
-            VertexStream    m_vertexStreams[1];
+            uint32_t m_textureIndex;
+            uint32_t m_streamCount;
+            VertexStream m_streams[1];
         };
 
         struct Mesh
         {
-            size_t      m_subMeshCount;
+            uint64_t    m_subMeshCount;
             SubMesh     m_subMeshes[1];
         };
     }

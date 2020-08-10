@@ -6,7 +6,7 @@ namespace salvation
 {
     namespace asset
     {
-        enum class TextureFormat
+        enum class TextureFormat : uint64_t
         {
             Undefined = -1,
             R_Float,
@@ -21,9 +21,8 @@ namespace salvation
 
         struct Texture
         {
-            size_t          m_packedDataId;
-            size_t          m_byteOffset { 0 };
-            size_t          m_byteSize;
+            uint64_t        m_byteSize;
+            uint64_t        m_byteOffset;
             TextureFormat   m_format;
         };
     }

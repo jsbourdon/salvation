@@ -24,6 +24,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>salvation_common</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>salvation_common</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -176,11 +177,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Assets\AssetDatabase.h" />
-    <ClInclude Include="Assets\Buffer.h" />
-    <ClInclude Include="Assets\Material.h" />
     <ClInclude Include="Assets\Mesh.h" />
-    <ClInclude Include="Assets\PackedData.h" />
     <ClInclude Include="Assets\Texture.h" />
+    <ClInclude Include="Containers\Vector.h" />
     <ClInclude Include="Core\Defines.h" />
     <ClInclude Include="Core\Globals.h" />
     <ClInclude Include="DataStructures\IndexFreeList.h" />
@@ -232,6 +231,7 @@
     <ClCompile Include="SystemInfo\SystemInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Containers\Vector.inl" />
     <None Include="FileSystem\FileSystem.inl" />
     <None Include="Memory\Implementations\Windows\VirtualMemoryAllocator.inl" />
     <None Include="SystemInfo\Implementations\Windows\SystemInfo.inl" />

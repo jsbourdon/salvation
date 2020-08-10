@@ -2,25 +2,35 @@
 
 #include <cstdint>
 #include <stdio.h>
+#include <vector>
 #include "asset_assembler/rapidjson/fwd.h"
+#include "Salvation_Common/Containers/Vector.h"
 
-struct sqlite3;
-struct sqlite3_stmt;
-
-namespace salvation::asset 
-{ 
-    enum class PackedDataType; 
-    enum class ComponentType;
-    enum class AttributeSemantic;
-}
-
-using namespace salvation::asset;
 using namespace rapidjson;
+using namespace salvation::containers;
 
 namespace asset_assembler
 {
     namespace database
     {
+        /*
+        enum class ComponentType
+        {
+            Unknown = -1,
+            Scalar_Float,
+            Scalar_Byte,
+            Scalar_Short,
+            Scalar_Int,
+            Vec2,
+            Vec3,
+            Vec4,
+            Matrix2x2,
+            Matrix3x3,
+            Matrix4x4,
+            Count
+        };
+        */
+
         class AssetDatabaseBuilder
         {
         public:
@@ -32,72 +42,24 @@ namespace asset_assembler
 
         private:
 
-            static constexpr size_t s_MaxRscFilePathLen = 1024;
-
-            struct StatementRAII
+            struct PackedBufferMeta
             {
-                StatementRAII(sqlite3_stmt *pStmt) : m_pStmt(pStmt) {}
-                ~StatementRAII();
-                sqlite3_stmt *m_pStmt;
+                PackedBufferMeta(uint64_t byteOffset, uint64_t byteSize) : m_byteOffset(byteOffset), m_byteSize(byteSize) {}
+                uint64_t m_byteOffset;
+                uint64_t m_byteSize;
             };
 
-            struct InsertStatements
-            {
-                sqlite3_stmt*   m_pPackedDataStmt;
-                sqlite3_stmt*   m_pTextureStmt;
-                sqlite3_stmt*   m_pBufferStmt;
-                sqlite3_stmt*   m_pMaterialStmt;
-                sqlite3_stmt*   m_pBufferViewStmt;
-                sqlite3_stmt*   m_pMeshStmt;
-                sqlite3_stmt*   m_pSubMeshStmt;
-                sqlite3_stmt*   m_pVertexStreamStmt;
-            };
+            static constexpr const char cpBuffersBinFileName[] = "Buffers.bin";
+            static constexpr const char cpTexturesBinFileName[] = "Textures.bin";
 
-            struct UpdateStatements
-            {
-                sqlite3_stmt*   m_pPackedDataStmt;
-            };
-
-            static uint8_t*     ReadFileContent(const char *pSrcPath, size_t &o_FileSize);
-
-            void                ReleaseResources();
-
-            bool                CreateDatabase(const char *pDstPath);
-            bool                CreateTables();
-
-            bool                CreateInsertStatements();
-            bool                CreateUpdateStatements();
-            void                ReleaseInsertStatements();
-            void                ReleaseUpdateStatements();
-            
-            int64_t             InsertPackagedDataEntry(const char *pFilePath, PackedDataType dataType);
-            bool                InsertTextureDataEntry(int64_t byteSize, int64_t byteOffset, int32_t format, int64_t packedDataId);
-            bool                InsertBufferDataEntry(int64_t byteSize, int64_t byteOffset, int64_t packedDataId);
-            bool                InsertMaterialDataEntry(int64_t textureId);
-            bool                InsertBufferViewDataEntry(int64_t bufferId, int64_t byteSize, int64_t byteOffset, int32_t stride);
-            int64_t             InsertMeshDataEntry(const char *pName);
-            int64_t             InsertSubMeshDataEntry(int64_t meshId, int64_t indexBufferViewId, int64_t materialId);
-            bool                InsertVertexStreamDataEntry(int64_t subMeshId, int64_t bufferViewId, int32_t attribute);
-
-            bool                UpdatePackagedDataEntry(int64_t packagedDataId, int64_t byteSize);
-
-            bool                InsertMaterialMetadata(Document &json);
-            bool                InsertBufferViewMetadata(Document &json);
-            bool                InsertMeshMetadata(Document &json);
-            bool                InsertVertexStreamsMetadata(Value &attributes, int64_t subMeshId);
-            bool                InsertMetadata(Document &json);
-
-            bool                BuildTextures(Document &json, const char *pSrcRootPath, const char *pDestRootPath);
-            int64_t             CompressTexture(const char *pSrcFilePath, FILE *pDestFile, int64_t packedDataId);
-            bool                BuildMeshes(Document &json, const char *pSrcRootPath, const char *pDestRootPath);
-
-            ComponentType       GetComponentType(const char *pGLTFType, int glTFComponentType);
+            bool    BuildTextures(const Document &json, const char *pSrcRootPath, const char *pDestRootPath);
+            int64_t CompressTexture(const char *pSrcFilePath, FILE *pDestFile);
+            bool    BuildMeshes(const Document &json, const char *pSrcRootPath, const char *pDestRootPath);
 
         private:
 
-            sqlite3*            m_pDb { nullptr };
-            InsertStatements    m_InsertStmts {};
-            UpdateStatements    m_UpdateStmts {};
+            Vector<PackedBufferMeta> m_buffersMeta { 100 };
+            Vector<PackedBufferMeta> m_texturesMeta { 100 };
         };
     }
 }

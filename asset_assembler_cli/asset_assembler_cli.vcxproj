@@ -130,7 +130,7 @@
       </IgnoreSpecificDefaultLibraries>
       <AdditionalDependencies>
       </AdditionalDependencies>
-      <ShowProgress>LinkVerbose</ShowProgress>
+      <ShowProgress>NotSet</ShowProgress>
     </Link>
     <ProjectReference />
   </ItemDefinitionGroup>
@@ -190,7 +190,7 @@
       </IgnoreSpecificDefaultLibraries>
       <AdditionalDependencies>
       </AdditionalDependencies>
-      <ShowProgress>LinkVerbose</ShowProgress>
+      <ShowProgress>NotSet</ShowProgress>
     </Link>
     <ProjectReference />
   </ItemDefinitionGroup>

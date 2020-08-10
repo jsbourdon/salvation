@@ -8,6 +8,13 @@ namespace salvation
 {
     namespace filesystem
     {
+        struct FileHandleRAII
+        {
+            FileHandleRAII(FILE* pFile) : m_pFile(pFile) {}
+            ~FileHandleRAII() { fclose(m_pFile); }
+            FILE* m_pFile;
+        };
+
         bool FileExists(const char* pFilePath);
         bool DirectoryExists(const char* pDirectoryPath);
         bool CreateDirectory(const char* pDirectoryPath);
