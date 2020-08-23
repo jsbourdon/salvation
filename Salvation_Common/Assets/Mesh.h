@@ -19,17 +19,17 @@ namespace salvation
 
         struct VertexStream
         {
+            uint64_t        m_byteSize;
+            uint64_t        m_byteOffset;
             VertexAttribute m_attribute;
-            uint32_t m_stride;
-            uint64_t m_byteSize;
-            uint64_t m_byteOffset;
+            uint32_t        m_stride;
         };
 
         struct SubMesh
         {
-            uint32_t m_textureIndex;
-            uint32_t m_streamCount;
-            VertexStream m_streams[1];
+            uint32_t        m_textureIndex;
+            uint32_t        m_streamCount;
+            VertexStream    m_streams[1];
         };
 
         struct Mesh

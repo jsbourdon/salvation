@@ -2,12 +2,13 @@
 
 #include "Vector.h"
 #include <cstdint>
+#include "Salvation_Common\Core\Defines.h"
 
-using namespace salvation::containers;
+using namespace salvation::data;
 
 template<typename ValueType, typename AllocatorType>
 Vector<ValueType, AllocatorType>::Vector(uint32_t reservedSize)
-    : m_pData(AllocatorType::Allocate(sizeof(ValueType) * reservedSize))
+    : m_pData(static_cast<ValueType*>(AllocatorType::Allocate(sizeof(ValueType) * reservedSize)))
     , m_size(0)
     , m_reservedSize(reservedSize)
 {
@@ -24,7 +25,10 @@ template<typename ValueType, typename AllocatorType>
 uint32_t Vector<ValueType, AllocatorType>::Add(ValueType& value)
 {
     EnsureCapacity();
-    m_pData[m_size++] = value;
+    m_pData[m_size] = value;
+
+    const uint32_t index = m_size++;
+    return index;
 }
 
 template<typename ValueType, typename AllocatorType>
@@ -46,6 +50,12 @@ ValueType* Vector<ValueType, AllocatorType>::Data()
 }
 
 template<typename ValueType, typename AllocatorType>
+void Vector<ValueType, AllocatorType>::Clear()
+{
+    m_size = 0;
+}
+
+template<typename ValueType, typename AllocatorType>
 ValueType& Vector<ValueType, AllocatorType>::operator[](size_t index)
 {
     SALVATION_ASSERT(index < m_size);
@@ -57,6 +67,17 @@ const ValueType& Vector<ValueType, AllocatorType>::operator[](size_t index) cons
 {
     SALVATION_ASSERT(index < m_size);
     return m_pData[index];
+}
+
+template<typename ValueType, typename AllocatorType>
+template<typename ...T>
+uint32_t Vector<ValueType, AllocatorType>::Emplace(T... args)
+{
+    EnsureCapacity();
+    new (m_pData + m_size) ValueType(args...);
+
+    const uint32_t index = m_size++;
+    return index;
 }
 
 template<typename ValueType, typename AllocatorType>

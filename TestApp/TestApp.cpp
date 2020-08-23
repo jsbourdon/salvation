@@ -64,8 +64,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     
     // Assets loading
     {
-        AssetDatabase assetDb;
-        assetDb.LoadMetadata("D:\\Temp\\Assets\\", "AssetsDB.db");
+        AssetDatabase* pAssetDb = LoadDatabase("D:\\Temp\\Assets\\AssetsDB.db");
     }
 
     while (!lwgl::events::PumpMessages())

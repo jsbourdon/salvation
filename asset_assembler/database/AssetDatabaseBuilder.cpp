@@ -15,6 +15,87 @@ using namespace salvation::memory;
 using namespace salvation::filesystem;
 
 
+bool AssetDatabaseBuilder::BuildDatabase(const char* pSrcPath, const char* pDstPath)
+{
+    uint64_t texturesByteSize = 0;
+    uint64_t meshesByteSize = 0;
+
+    m_buffersMeta.Clear();
+    m_texturesMeta.Clear();
+
+    size_t jsonContentSize;
+    char* pJsonContent = reinterpret_cast<char*>(ReadFileContent<ThreadHeapAllocator>(pSrcPath, jsonContentSize));
+
+    if (!pJsonContent)
+    {
+        return false;
+    }
+
+    // Pack data
+    {
+        Document json;
+        json.Parse(pJsonContent);
+
+        ThreadHeapAllocator::Release(pJsonContent);
+
+        const char* pDstRootPathEnd = strrchr(pDstPath, '/');
+        const char* pSrcRootPathEnd = strrchr(pSrcPath, '/');
+
+        if (!pDstRootPathEnd || !pSrcRootPathEnd)
+        {
+            return false;
+        }
+
+        size_t dstRootFolderStrLen =
+            static_cast<size_t>(reinterpret_cast<uintptr_t>(pDstRootPathEnd) - reinterpret_cast<uintptr_t>(pDstPath)) + 1;
+        size_t srcRootFolderStrLen =
+            static_cast<size_t>(reinterpret_cast<uintptr_t>(pSrcRootPathEnd) - reinterpret_cast<uintptr_t>(pSrcPath)) + 1;
+
+        char* pDstRootPath = static_cast<char*>(salvation::memory::StackAlloc(dstRootFolderStrLen + 1));
+        char* pSrcRootPath = static_cast<char*>(salvation::memory::StackAlloc(srcRootFolderStrLen + 1));
+
+        pDstRootPath[dstRootFolderStrLen] = 0;
+        pSrcRootPath[srcRootFolderStrLen] = 0;
+
+        memcpy(pDstRootPath, pDstPath, dstRootFolderStrLen);
+        memcpy(pSrcRootPath, pSrcPath, srcRootFolderStrLen);
+
+        if (!PackData(json, pSrcRootPath, pDstRootPath, texturesByteSize, meshesByteSize))
+        {
+            return false;
+        }
+    }
+
+    // Write metadata
+    {
+        FILE* pDBFile = nullptr;
+        if (fopen_s(&pDBFile, pDstPath, "wb") != 0)
+        {
+            return false;
+        }
+
+        FileHandleRAII fileRAII(pDBFile);
+
+        AssetDatabaseHeader header {};
+        strcpy_s(header.m_pPackedBuffersFileName, cpBuffersBinFileName);
+        strcpy_s(header.m_pPackedTexturesFileName, cpTexturesBinFileName);
+
+        header.m_textureByteSize = texturesByteSize;
+        header.m_meshByteSize = meshesByteSize;
+        header.m_meshCount = m_buffersMeta.Size();
+        header.m_textureCount = m_texturesMeta.Size();
+
+        if (fwrite(&header, sizeof(AssetDatabaseHeader), 1, pDBFile) != sizeof(AssetDatabaseHeader))
+        {
+            return false;
+        }
+
+
+    }
+
+    return true;
+}
+
 /// CMP_Feedback_Proc
 /// Feedback function for conversion.
 /// \param[in] fProgress The percentage progress of the texture compression.
@@ -78,64 +159,19 @@ int64_t AssetDatabaseBuilder::CompressTexture(const char *pSrcFilePath, FILE *pD
     return byteSize;
 }
 
-/*
-int64_t AssetDatabaseBuilder::InsertPackagedDataEntry(const char *pFilePath, salvation::asset::PackedDataType dataType)
+bool AssetDatabaseBuilder::PackData(
+    const Document& json,
+    const char* pSrcRootPath,
+    const char* pDestRootPath,
+    uint64_t& oTexturesByteSize,
+    uint64_t& oMeshesByteSize)
 {
-    int64_t packageID = -1;
-    
-    // #todo Implement
-
-    return packageID;
+    return
+        PackTextures(json, pSrcRootPath, pDestRootPath, oTexturesByteSize) &&
+        PackMeshes(json, pSrcRootPath, pDestRootPath, oMeshesByteSize);
 }
 
-bool AssetDatabaseBuilder::InsertTextureDataEntry(int64_t byteSize, int64_t byteOffset, int32_t format, int64_t packedDataId)
-{
-    // #todo Implement
-}
-
-bool AssetDatabaseBuilder::InsertBufferDataEntry(int64_t byteSize, int64_t byteOffset, int64_t packedDataId)
-{
-    // #todo Implement
-}
-
-bool AssetDatabaseBuilder::InsertMaterialDataEntry(int64_t textureId)
-{
-    // #todo Implement
-}
-
-bool AssetDatabaseBuilder::InsertBufferViewDataEntry(int64_t bufferId, int64_t byteSize, int64_t byteOffset, int32_t stride)
-{
-    // #todo Implement
-}
-
-int64_t AssetDatabaseBuilder::InsertMeshDataEntry(const char *pName)
-{
-    // #todo Implement
-}
-
-int64_t AssetDatabaseBuilder::InsertSubMeshDataEntry(int64_t meshId, int64_t indexBufferViewId, int64_t materialId)
-{
-    // #todo Implement
-}
-
-bool AssetDatabaseBuilder::InsertVertexStreamDataEntry(int64_t subMeshId, int64_t bufferViewId, int32_t attribute)
-{
-    // #todo Implement
-}
-
-bool AssetDatabaseBuilder::UpdatePackagedDataEntry(int64_t packagedDataId, int64_t byteSize)
-{
-    // #todo Implement
-}
-
-FILE* AssetDatabaseBuilder::CreateMetadataFile()
-{
-    //static constexpr const char cpTexturesBinFileName[] = "Textures.bin";
-    //static constexpr const char cpBuffersBinFileName[] = "Buffers.bin";
-}
-*/
-
-bool AssetDatabaseBuilder::BuildTextures(const Document &json, const char *pSrcRootPath, const char *pDestRootPath)
+bool AssetDatabaseBuilder::PackTextures(const Document &json, const char *pSrcRootPath, const char *pDestRootPath, uint64_t& oByteSize)
 {
     static constexpr const char s_pTexturesBinFileName[] = "Textures.bin";
     static constexpr const char s_pImgProperty[] = "images";
@@ -156,6 +192,8 @@ bool AssetDatabaseBuilder::BuildTextures(const Document &json, const char *pSrcR
                 return false;
             }
 
+            FileHandleRAII fileRAII(pDestFile);
+
             int64_t currentByteOffset = 0;
 
             for (SizeType i = 0; i < imageCount; ++i)
@@ -173,17 +211,19 @@ bool AssetDatabaseBuilder::BuildTextures(const Document &json, const char *pSrcR
                         return false;
                     }
 
-                    m_texturesMeta.emplace_back(currentByteOffset, textureByteSize);
+                    m_texturesMeta.Emplace(currentByteOffset, textureByteSize);
                     currentByteOffset += textureByteSize;
                 }
             }
+
+            oByteSize = currentByteOffset;
         }
     }
 
     return true;
 }
 
-bool AssetDatabaseBuilder::BuildMeshes(const Document &json, const char *pSrcRootPath, const char *pDestRootPath)
+bool AssetDatabaseBuilder::PackMeshes(const Document &json, const char *pSrcRootPath, const char *pDestRootPath, uint64_t& oByteSize)
 {
     static constexpr const char cpBuffersBinFileName[] = "Buffers.bin";
     static constexpr const char cpBuffersProperty[] = "buffers";
@@ -204,10 +244,11 @@ bool AssetDatabaseBuilder::BuildMeshes(const Document &json, const char *pSrcRoo
                 return false;
             }
 
-            bool writeSucceeded = true;
+            FileHandleRAII fileRAII(pDestFile);
+
             uint64_t currentByteOffset = 0;
 
-            for (SizeType i = 0; i < bufferCount && writeSucceeded; ++i)
+            for (SizeType i = 0; i < bufferCount; ++i)
             {
                 const Value &buffer = buffers[i];
                 if (buffer.HasMember(cpUriProperty) && buffer[cpUriProperty].IsString())
@@ -219,11 +260,12 @@ bool AssetDatabaseBuilder::BuildMeshes(const Document &json, const char *pSrcRoo
                     str_smart_ptr pSrcFilePath = salvation::filesystem::AppendPaths(pSrcRootPath, pBufferUri);
                     uint8_t *pData = ReadFileContent<ThreadHeapAllocator>(pSrcFilePath, fileSize);
 
-                    writeSucceeded =
-                        fileSize > 0 &&
-                        fwrite(pData, sizeof(uint8_t), fileSize, pDestFile) == fileSize;
+                    if (fileSize == 0 || fwrite(pData, sizeof(uint8_t), fileSize, pDestFile) != fileSize)
+                    {
+                        return false;
+                    }
 
-                    m_buffersMeta.push_back({ currentByteOffset, fileSize });
+                    m_buffersMeta.Emplace(currentByteOffset, fileSize);
 
                     currentByteOffset += static_cast<uint64_t>(fileSize);
 
@@ -231,12 +273,39 @@ bool AssetDatabaseBuilder::BuildMeshes(const Document &json, const char *pSrcRoo
                 }
             }
 
-            fclose(pDestFile);
-
-            return writeSucceeded;
+            oByteSize = currentByteOffset;
         }
     }
 
+    return true;
+}
+
+bool AssetDatabaseBuilder::InsertMeta(const Document& json, FILE* pDBFile)
+{
+    return
+        InsertTexturesMeta(json, pDBFile) &&
+        InsertMeshesMeta(json, pDBFile);
+}
+
+bool AssetDatabaseBuilder::InsertTexturesMeta(const Document& json, FILE* pDBFile)
+{
+    uint32_t textureCount = m_texturesMeta.Size();
+    for (uint32_t i = 0; i < textureCount; ++i)
+    {
+        const PackedBufferMeta& meta = m_texturesMeta[i];
+        Texture texture { meta.m_byteSize, meta.m_byteOffset, TextureFormat::BC3 };
+
+        if (fwrite(&texture, sizeof(Texture), 1, pDBFile) != sizeof(Texture))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool AssetDatabaseBuilder::InsertMeshesMeta(const Document& json, FILE* pDBFile)
+{
     return true;
 }
 
@@ -279,7 +348,46 @@ bool AssetDatabaseBuilder::InsertMaterialMetadata(Document &json)
 
     return true;
 }
+*/
 
+uint64_t AssetDatabaseBuilder::GetTextureIndex(const Document& json, uint64_t materialIndex)
+{
+    static constexpr const char s_pMaterialsProperty[] = "materials";
+    static constexpr const char s_pPBRProperty[] = "pbrMetallicRoughness";
+    static constexpr const char s_pBaseTextureProperty[] = "baseColorTexture";
+    static constexpr const char s_pIndexProperty[] = "index";
+
+    uint64_t index = cInvalidIndex;
+
+    if (json.HasMember(s_pMaterialsProperty) && json[s_pMaterialsProperty].IsArray())
+    {
+        const Value& materials = json[s_pMaterialsProperty];
+        SizeType materialCount = materials.Size();
+
+        //for (SizeType i = 0; i < materialCount; ++i)
+        if (materialIndex < materialCount)
+        {
+            const Value& material = materials[materialIndex];
+            if (material.HasMember(s_pPBRProperty) && material[s_pPBRProperty].IsObject())
+            {
+                const Value& pbr = material[s_pPBRProperty];
+                if (pbr.HasMember(s_pBaseTextureProperty) && pbr[s_pBaseTextureProperty].IsObject())
+                {
+                    const Value& baseTexture = pbr[s_pBaseTextureProperty];
+                    if (baseTexture.HasMember(s_pIndexProperty) && baseTexture[s_pIndexProperty].IsInt())
+                    {
+                        const Value& indexProperty = baseTexture[s_pIndexProperty];
+                        index = indexProperty.GetUint64();
+                    }
+                }
+            }
+        }
+    }
+
+    return index;
+}
+
+/*
 ComponentType AssetDatabaseBuilder::GetComponentType(const char *pGLTFType, int glTFComponentType)
 {
     static constexpr uint32_t cglTFByteCode = 5120;
@@ -502,62 +610,3 @@ bool AssetDatabaseBuilder::InsertMetadata(Document &json)
 }
 */
 
-bool AssetDatabaseBuilder::BuildDatabase(const char *pSrcPath, const char *pDstPath)
-{
-    bool success = false;
-
-    FILE* pDBFile = nullptr;
-    if (fopen_s(&pDBFile, pDstPath, "wb") != 0)
-    {
-        return false;
-    }
-
-    FileHandleRAII fileRAII(pDBFile);
-
-    AssetDatabaseHeader header;
-    strcpy_s(header.m_pPackedBuffersFileName, cpBuffersBinFileName);
-    strcpy_s(header.m_pPackedTexturesFileName, cpTexturesBinFileName);
-    header.m_meshCount = header.m_textureCount = 0;
-
-    if (fwrite(&header, sizeof(AssetDatabaseHeader), 1, pDBFile) != sizeof(AssetDatabaseHeader))
-    {
-        return false;
-    }
-
-    size_t jsonContentSize;
-    char* pJsonContent = reinterpret_cast<char*>(ReadFileContent<ThreadHeapAllocator>(pSrcPath, jsonContentSize));
-
-    if (pJsonContent)
-    {
-        Document json;
-        json.Parse(pJsonContent);
-
-        ThreadHeapAllocator::Release(pJsonContent);
-
-        const char* pDstRootPathEnd = strrchr(pDstPath, '/');
-        const char* pSrcRootPathEnd = strrchr(pSrcPath, '/');
-
-        if (pDstRootPathEnd && pSrcRootPathEnd)
-        {
-            size_t dstRootFolderStrLen =
-                static_cast<size_t>(reinterpret_cast<uintptr_t>(pDstRootPathEnd) - reinterpret_cast<uintptr_t>(pDstPath)) + 1;
-            size_t srcRootFolderStrLen =
-                static_cast<size_t>(reinterpret_cast<uintptr_t>(pSrcRootPathEnd) - reinterpret_cast<uintptr_t>(pSrcPath)) + 1;
-
-            char* pDstRootPath = static_cast<char*>(salvation::memory::StackAlloc(dstRootFolderStrLen + 1));
-            char* pSrcRootPath = static_cast<char*>(salvation::memory::StackAlloc(srcRootFolderStrLen + 1));
-
-            pDstRootPath[dstRootFolderStrLen] = 0;
-            pSrcRootPath[srcRootFolderStrLen] = 0;
-
-            memcpy(pDstRootPath, pDstPath, dstRootFolderStrLen);
-            memcpy(pSrcRootPath, pSrcPath, srcRootFolderStrLen);
-
-            success =
-                BuildTextures(json, pSrcRootPath, pDstRootPath) &&
-                BuildMeshes(json, pSrcRootPath, pDstRootPath);
-        }
-    }
-
-    return success;
-}

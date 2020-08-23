@@ -179,11 +179,11 @@
     <ClInclude Include="Assets\AssetDatabase.h" />
     <ClInclude Include="Assets\Mesh.h" />
     <ClInclude Include="Assets\Texture.h" />
-    <ClInclude Include="Containers\Vector.h" />
     <ClInclude Include="Core\Defines.h" />
     <ClInclude Include="Core\Globals.h" />
     <ClInclude Include="DataStructures\IndexFreeList.h" />
     <ClInclude Include="DataStructures\PackedArray.h" />
+    <ClInclude Include="DataStructures\Vector.h" />
     <ClInclude Include="FileSystem\FileSystem.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Handle\Handle.h" />
@@ -231,7 +231,7 @@
     <ClCompile Include="SystemInfo\SystemInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Containers\Vector.inl" />
+    <None Include="DataStructures\Vector.inl" />
     <None Include="FileSystem\FileSystem.inl" />
     <None Include="Memory\Implementations\Windows\VirtualMemoryAllocator.inl" />
     <None Include="SystemInfo\Implementations\Windows\SystemInfo.inl" />

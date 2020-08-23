@@ -17,9 +17,7 @@ AssetDatabase* salvation::asset::LoadDatabase(const char* pFilePath)
     }
 
     AssetDatabase* pDatabase = reinterpret_cast<AssetDatabase*>(pData);
-    const uint32_t meshCount = pDatabase->m_header.m_meshCount;
-    const uint32_t textureCount = pDatabase->m_header.m_textureCount;
-    const size_t dbSize = sizeof(AssetDatabaseHeader) + (meshCount * sizeof(Mesh)) + (textureCount * sizeof(Texture));
+    SALVATION_ASSERT_MSG(pDatabase->m_header.m_magicNumber == cMagicNumber, "Invalid database. Wrong magic number.");
 
     if (fileSize != dbSize)
     {

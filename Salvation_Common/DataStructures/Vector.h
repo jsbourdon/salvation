@@ -7,7 +7,7 @@ using namespace salvation::memory;
 
 namespace salvation
 {
-    namespace containers
+    namespace data
     {
         template<typename ValueType, typename AllocatorType = ThreadHeapAllocator>
         class Vector
@@ -20,9 +20,13 @@ namespace salvation
             ValueType&          Remove(uint32_t index);
             ValueType*          Data();
             uint32_t            Size() const { return m_size; }
+            void                Clear();
 
             ValueType&          operator[](size_t index);
             const ValueType&    operator[](size_t index) const;
+
+            template<typename ...T>
+            uint32_t            Emplace(T... args);
 
         private:
 

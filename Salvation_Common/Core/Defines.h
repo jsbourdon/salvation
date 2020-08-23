@@ -3,6 +3,7 @@
 #include <type_traits>
 #include <stdio.h>
 #include <comdef.h>
+#include <limits>
 
 #define STRINGIFY(value) STRINGIFY2(value)
 #define STRINGIFY2(value) #value
