@@ -1,6 +1,7 @@
 #include <pch.h>
 #include "AssetDatabase.h"
 #include "Salvation_Common/FileSystem/FileSystem.h"
+#include "Salvation_Common/Assets/Texture.h"
 
 using namespace salvation::asset;
 using namespace salvation::filesystem;
@@ -17,11 +18,9 @@ AssetDatabase* salvation::asset::LoadDatabase(const char* pFilePath)
     }
 
     AssetDatabase* pDatabase = reinterpret_cast<AssetDatabase*>(pData);
-    SALVATION_ASSERT_MSG(pDatabase->m_header.m_magicNumber == cMagicNumber, "Invalid database. Wrong magic number.");
-
-    if (fileSize != dbSize)
+    if (pDatabase->m_header.m_magicNumber != cMagicNumber)
     {
-        SALVATION_ASSERT_MSG(false, "Invalid database file");
+        SALVATION_ASSERT_MSG(false, "Invalid database. Wrong magic number.");
         return nullptr;
     }
 

@@ -17,8 +17,8 @@ int main(int argc, char* argv[])
     const char* pGltfFilePath = argv[1];
     const char* pDbFilePath = argv[2];
 
-    //bool success = builder.BuildDatabase("D:/Temp/bulbasaur/scene.gltf", "D:/Temp/Assets/AssetsDB.db");
-    bool success = builder.BuildDatabase(pGltfFilePath, pDbFilePath);
+    bool success = builder.BuildDatabase("D:/GitHub/salvation/TestApp/Media/star_trek_danube_class/scene.gltf", "D:/Temp/StartTrek.db");
+    //bool success = builder.BuildDatabase(pGltfFilePath, pDbFilePath);
 
     if (success)
     {

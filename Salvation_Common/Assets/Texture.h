@@ -6,7 +6,7 @@ namespace salvation
 {
     namespace asset
     {
-        enum class TextureFormat : uint32_t
+        enum class TextureFormat : int32_t
         {
             Undefined = -1,
             R_Float,

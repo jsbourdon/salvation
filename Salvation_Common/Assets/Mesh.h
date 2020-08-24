@@ -12,30 +12,45 @@ namespace salvation
             Color,
             Normal,
             Tangent,
-            Bitangent,
             UV,
             Count
         };
 
-        struct VertexStream
+        static constexpr const char* cppVertexAttributeSemantics[] =
         {
-            uint64_t        m_byteSize;
-            uint64_t        m_byteOffset;
-            VertexAttribute m_attribute;
-            uint32_t        m_stride;
+            "POSITION",
+            "COLOR_0",
+            "NORMAL",
+            "TANGENT",
+            "TEXCOORD_0"
+        };
+
+        static_assert(SALVATION_ARRAY_SIZE(cppVertexAttributeSemantics) == static_cast<size_t>(VertexAttribute::Count));
+
+        struct BufferView
+        {
+            uint64_t m_bufferIndex { std::numeric_limits<uint64_t>::max() };
+            uint64_t m_byteSize { 0 };
+            uint64_t m_byteOffset { 0 };
+            uint64_t m_byteStride { 0 };
+        };
+
+        struct VertexStream : BufferView
+        {
+            VertexAttribute m_attribute {};
         };
 
         struct SubMesh
         {
-            uint32_t        m_textureIndex;
-            uint32_t        m_streamCount;
-            VertexStream    m_streams[1];
+            BufferView  m_indexBuffer {};
+            uint32_t    m_textureIndex { std::numeric_limits<uint32_t>::max() };
+            uint32_t    m_streamCount { 0 };
+            // VertexStream    m_streams[1];
         };
 
         struct Mesh
         {
-            uint64_t    m_subMeshCount;
-            SubMesh     m_subMeshes[1];
+            uint64_t m_subMeshCount { 0 };
         };
     }
 }

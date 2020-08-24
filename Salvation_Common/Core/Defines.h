@@ -1,5 +1,7 @@
 #pragma once
 
+#define NOMINMAX
+
 #include <type_traits>
 #include <stdio.h>
 #include <comdef.h>
@@ -10,7 +12,7 @@
 #define CONCAT(value0, value1) CONCAT2(value0, value1)
 #define CONCAT2(value0, value1) value0##value1
 
-#define ARRAY_SIZE(A) std::extent<decltype(A)>::value
+#define SALVATION_ARRAY_SIZE(A) std::extent<decltype(A)>::value
 
 #define KiB(value) (size_t(1024)*value)
 #define MiB(value) (KiB(value)*size_t(1024))
@@ -58,7 +60,7 @@
             if (!(x))                                                                                                   \
             {                                                                                                           \
                 char tmp[1024];                                                                                         \
-                sprintf_s(tmp, ARRAY_SIZE(tmp), "Assertion failed: %s\n%s", #x, msg);                                   \
+                sprintf_s(tmp, SALVATION_ARRAY_SIZE(tmp), "Assertion failed: %s\n%s", #x, msg);                                   \
                 printf_s("%s", tmp);                                                                                    \
                 int selection = MessageBoxA(NULL, tmp, "Assert", MB_ABORTRETRYIGNORE | MB_ICONERROR | MB_TASKMODAL);    \
                 if (selection == IDRETRY) DebugBreak();                                                                 \

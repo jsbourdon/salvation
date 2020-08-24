@@ -4,7 +4,7 @@
 #include "Salvation_Common/Memory/ThreadHeapSmartPointer.h"
 #include "Salvation_Common/FileSystem/FileSystem.h"
 #include "Salvation_Common/Assets/AssetDatabase.h"
-#include "Salvation_Common/sqlite/sqlite3.h"
+#include "Salvation_Common/Assets/Texture.h"
 #include "rapidjson/document.h"
 #include "3rd/Compressonator/Compressonator/CMP_Framework/CMP_Framework.h"
 
@@ -14,12 +14,14 @@ using namespace salvation::asset;
 using namespace salvation::memory;
 using namespace salvation::filesystem;
 
+template<typename T>
+static bool AssetDatabaseBuilder::WriteData(const T& value, FILE* pFile)
+{
+    return fwrite(&value, sizeof(T), 1, pFile) == 1;
+}
 
 bool AssetDatabaseBuilder::BuildDatabase(const char* pSrcPath, const char* pDstPath)
 {
-    uint64_t texturesByteSize = 0;
-    uint64_t meshesByteSize = 0;
-
     m_buffersMeta.Clear();
     m_texturesMeta.Clear();
 
@@ -31,11 +33,11 @@ bool AssetDatabaseBuilder::BuildDatabase(const char* pSrcPath, const char* pDstP
         return false;
     }
 
+    Document json;
+    json.Parse(pJsonContent);
+
     // Pack data
     {
-        Document json;
-        json.Parse(pJsonContent);
-
         ThreadHeapAllocator::Release(pJsonContent);
 
         const char* pDstRootPathEnd = strrchr(pDstPath, '/');
@@ -60,7 +62,7 @@ bool AssetDatabaseBuilder::BuildDatabase(const char* pSrcPath, const char* pDstP
         memcpy(pDstRootPath, pDstPath, dstRootFolderStrLen);
         memcpy(pSrcRootPath, pSrcPath, srcRootFolderStrLen);
 
-        if (!PackData(json, pSrcRootPath, pDstRootPath, texturesByteSize, meshesByteSize))
+        if (!PackData(json, pSrcRootPath, pDstRootPath))
         {
             return false;
         }
@@ -80,98 +82,34 @@ bool AssetDatabaseBuilder::BuildDatabase(const char* pSrcPath, const char* pDstP
         strcpy_s(header.m_pPackedBuffersFileName, cpBuffersBinFileName);
         strcpy_s(header.m_pPackedTexturesFileName, cpTexturesBinFileName);
 
-        header.m_textureByteSize = texturesByteSize;
-        header.m_meshByteSize = meshesByteSize;
         header.m_meshCount = m_buffersMeta.Size();
         header.m_textureCount = m_texturesMeta.Size();
 
-        if (fwrite(&header, sizeof(AssetDatabaseHeader), 1, pDBFile) != sizeof(AssetDatabaseHeader))
+        if (!WriteData(header, pDBFile))
         {
             return false;
         }
 
-
+        if (!InsertMeta(json, pDBFile))
+        {
+            return false;
+        }
     }
 
     return true;
 }
 
-/// CMP_Feedback_Proc
-/// Feedback function for conversion.
-/// \param[in] fProgress The percentage progress of the texture compression.
-/// \return non-NULL(true) value to abort conversion
-static bool CMP_Feedback(CMP_FLOAT fProgress, CMP_DWORD_PTR pUser1, CMP_DWORD_PTR pUser2)
-{
-    return false;
-}
-
-int64_t AssetDatabaseBuilder::CompressTexture(const char *pSrcFilePath, FILE *pDestFile)
-{
-    int64_t byteSize = 0;
-
-    CMP_MipSet mipSetIn = {};
-    CMP_MipSet mipSetOut = {};
-
-    CMP_ERROR result = CMP_LoadTexture(pSrcFilePath, &mipSetIn);
-
-    if (result == CMP_OK)
-    {
-        // Generate MIP chain if not already generated
-        if (mipSetIn.m_nMipLevels <= 1)
-        {
-            static constexpr CMP_INT s_MinMipSize = 4; // 4x4
-            CMP_GenerateMIPLevels(&mipSetIn, s_MinMipSize);
-        }
-
-        // Compress texture into BC3 for now #todo provide format as argument
-        {
-            KernelOptions kernelOptions = {};
-            kernelOptions.format = CMP_FORMAT_BC3;
-            kernelOptions.fquality = 1.0f;
-            kernelOptions.threads = 0; // Auto setting
-            
-            result = CMP_ProcessTexture(&mipSetIn, &mipSetOut, kernelOptions, &CMP_Feedback);
-
-            if (result == CMP_OK)
-            {
-                // #todo Properly save the whole mip chain
-                for (int i = 0; i < 1/*mipSetOut.m_nMipLevels*/; ++i)
-                {
-                    CMP_MipLevel *pMipData;
-                    CMP_GetMipLevel(&pMipData, &mipSetOut, i, 0);
-                    int64_t mipByteSize = pMipData->m_dwLinearSize;
-
-                    if (fwrite(pMipData->m_pbData, sizeof(uint8_t), mipByteSize, pDestFile) != mipByteSize)
-                    {
-                        byteSize = -1;
-                        break;
-                    }
-
-                    byteSize += mipByteSize;
-                }
-            }
-        }
-    }
-
-    CMP_FreeMipSet(&mipSetIn);
-    CMP_FreeMipSet(&mipSetOut);
-
-    return byteSize;
-}
-
 bool AssetDatabaseBuilder::PackData(
     const Document& json,
     const char* pSrcRootPath,
-    const char* pDestRootPath,
-    uint64_t& oTexturesByteSize,
-    uint64_t& oMeshesByteSize)
+    const char* pDestRootPath)
 {
     return
-        PackTextures(json, pSrcRootPath, pDestRootPath, oTexturesByteSize) &&
-        PackMeshes(json, pSrcRootPath, pDestRootPath, oMeshesByteSize);
+        PackTextures(json, pSrcRootPath, pDestRootPath) &&
+        PackBuffers(json, pSrcRootPath, pDestRootPath);
 }
 
-bool AssetDatabaseBuilder::PackTextures(const Document &json, const char *pSrcRootPath, const char *pDestRootPath, uint64_t& oByteSize)
+bool AssetDatabaseBuilder::PackTextures(const Document &json, const char *pSrcRootPath, const char *pDestRootPath)
 {
     static constexpr const char s_pTexturesBinFileName[] = "Textures.bin";
     static constexpr const char s_pImgProperty[] = "images";
@@ -215,15 +153,13 @@ bool AssetDatabaseBuilder::PackTextures(const Document &json, const char *pSrcRo
                     currentByteOffset += textureByteSize;
                 }
             }
-
-            oByteSize = currentByteOffset;
         }
     }
 
     return true;
 }
 
-bool AssetDatabaseBuilder::PackMeshes(const Document &json, const char *pSrcRootPath, const char *pDestRootPath, uint64_t& oByteSize)
+bool AssetDatabaseBuilder::PackBuffers(const Document &json, const char *pSrcRootPath, const char *pDestRootPath)
 {
     static constexpr const char cpBuffersBinFileName[] = "Buffers.bin";
     static constexpr const char cpBuffersProperty[] = "buffers";
@@ -232,7 +168,7 @@ bool AssetDatabaseBuilder::PackMeshes(const Document &json, const char *pSrcRoot
     if (json.HasMember(cpBuffersProperty) && json[cpBuffersProperty].IsArray())
     {
         const Value &buffers = json[cpBuffersProperty];
-        SizeType bufferCount = buffers.Size();
+        const SizeType bufferCount = buffers.Size();
 
         if (bufferCount > 0)
         {
@@ -272,8 +208,6 @@ bool AssetDatabaseBuilder::PackMeshes(const Document &json, const char *pSrcRoot
                     ThreadHeapAllocator::Release(pData);
                 }
             }
-
-            oByteSize = currentByteOffset;
         }
     }
 
@@ -295,7 +229,7 @@ bool AssetDatabaseBuilder::InsertTexturesMeta(const Document& json, FILE* pDBFil
         const PackedBufferMeta& meta = m_texturesMeta[i];
         Texture texture { meta.m_byteSize, meta.m_byteOffset, TextureFormat::BC3 };
 
-        if (fwrite(&texture, sizeof(Texture), 1, pDBFile) != sizeof(Texture))
+        if (!WriteData(texture, pDBFile))
         {
             return false;
         }
@@ -306,7 +240,100 @@ bool AssetDatabaseBuilder::InsertTexturesMeta(const Document& json, FILE* pDBFil
 
 bool AssetDatabaseBuilder::InsertMeshesMeta(const Document& json, FILE* pDBFile)
 {
+    static constexpr const char cpMeshesProperty[] = "meshes";
+    static constexpr const char cpSubMeshesProperty[] = "primitives";
+    static constexpr const char cpIndicesProperty[] = "indices";
+    static constexpr const char cpMaterialProperty[] = "material";
+    static constexpr const char cpAttributesProperty[] = "attributes";
+
+    if (json.HasMember(cpMeshesProperty) && json[cpMeshesProperty].IsArray())
+    {
+        const Value& meshes = json[cpMeshesProperty];
+        const SizeType meshCount = meshes.Size();
+
+        // Write every mesh
+        for (SizeType meshIndex = 0; meshIndex < meshCount; ++meshIndex)
+        {
+            const Value& mesh = meshes[meshIndex];
+
+            if (mesh.HasMember(cpSubMeshesProperty) && mesh[cpSubMeshesProperty].IsArray())
+            {
+                const Value& subMeshes = mesh[cpSubMeshesProperty];
+                const SizeType subMeshCount = subMeshes.Size();
+
+                Mesh meshData { subMeshCount };
+                if (!WriteData(meshData, pDBFile))
+                {
+                    return false;
+                }
+
+                // Write sub meshes for current mesh
+                for (SizeType subMeshIndex = 0; subMeshIndex < subMeshCount; ++subMeshIndex)
+                {
+                    const Value& subMesh = subMeshes[subMeshIndex];
+
+                    if (
+                        subMesh.HasMember(cpIndicesProperty) && subMesh[cpIndicesProperty].IsInt() &&
+                        subMesh.HasMember(cpMaterialProperty) && subMesh[cpMaterialProperty].IsInt() &&
+                        subMesh.HasMember(cpAttributesProperty) && subMesh[cpAttributesProperty].IsObject())
+                    {
+                        SubMesh subMeshData {};
+
+                        const SizeType indexBufferIndex = subMesh[cpIndicesProperty].GetInt();
+                        const SizeType materialIndex = subMesh[cpMaterialProperty].GetInt();
+                        const Value& attributes = subMesh[cpAttributesProperty];
+
+                        subMeshData.m_textureIndex = GetTextureIndex(json, materialIndex);
+                        subMeshData.m_streamCount = GetSupportedAttributeCount(attributes);
+                        GetBufferView(json, indexBufferIndex, subMeshData.m_indexBuffer);
+                        
+                        if (!WriteData(subMeshData, pDBFile))
+                        {
+                            return false;
+                        }
+
+                        // Write streams for current sub mesh
+                        for (size_t i = 0; i < SALVATION_ARRAY_SIZE(cppVertexAttributeSemantics); ++i)
+                        {
+                            const char* pAttributeSemantic = cppVertexAttributeSemantics[i];
+                            if (attributes.HasMember(pAttributeSemantic) && attributes[pAttributeSemantic].IsInt())
+                            {
+                                const SizeType accessorIndex = attributes[pAttributeSemantic].GetInt();
+                                VertexStream stream {};
+                                stream.m_attribute = static_cast<VertexAttribute>(i);
+                                GetBufferView(json, accessorIndex, stream);
+
+                                if (!WriteData(stream, pDBFile))
+                                {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     return true;
+}
+
+uint32_t AssetDatabaseBuilder::GetSupportedAttributeCount(const Value& attributes)
+{
+    SALVATION_ASSERT(attributes.IsObject());
+
+    uint32_t count = 0;
+
+    for (size_t i = 0; i < SALVATION_ARRAY_SIZE(cppVertexAttributeSemantics); ++i)
+    {
+        const char* pAttributeSemantic = cppVertexAttributeSemantics[i];
+        if (attributes.HasMember(pAttributeSemantic) && attributes[pAttributeSemantic].IsInt())
+        {
+            ++count;
+        }
+    }
+
+    return count;
 }
 
 /*
@@ -350,19 +377,21 @@ bool AssetDatabaseBuilder::InsertMaterialMetadata(Document &json)
 }
 */
 
-uint64_t AssetDatabaseBuilder::GetTextureIndex(const Document& json, uint64_t materialIndex)
+uint32_t AssetDatabaseBuilder::GetTextureIndex(const Document& json, SizeType materialIndex)
 {
+    static constexpr const char s_pTexturesProperty[] = "textures";
     static constexpr const char s_pMaterialsProperty[] = "materials";
     static constexpr const char s_pPBRProperty[] = "pbrMetallicRoughness";
     static constexpr const char s_pBaseTextureProperty[] = "baseColorTexture";
     static constexpr const char s_pIndexProperty[] = "index";
+    static constexpr const char s_pSourceProperty[] = "source";
 
-    uint64_t index = cInvalidIndex;
+    uint32_t index = cInvalidIndex;
 
     if (json.HasMember(s_pMaterialsProperty) && json[s_pMaterialsProperty].IsArray())
     {
         const Value& materials = json[s_pMaterialsProperty];
-        SizeType materialCount = materials.Size();
+        const SizeType materialCount = materials.Size();
 
         //for (SizeType i = 0; i < materialCount; ++i)
         if (materialIndex < materialCount)
@@ -377,7 +406,21 @@ uint64_t AssetDatabaseBuilder::GetTextureIndex(const Document& json, uint64_t ma
                     if (baseTexture.HasMember(s_pIndexProperty) && baseTexture[s_pIndexProperty].IsInt())
                     {
                         const Value& indexProperty = baseTexture[s_pIndexProperty];
-                        index = indexProperty.GetUint64();
+                        SizeType textureIndex = indexProperty.GetInt();
+
+                        if (json.HasMember(s_pTexturesProperty) && json[s_pTexturesProperty].IsArray())
+                        {
+                            const Value& textures = json[s_pTexturesProperty];
+                            const SizeType textureCount = textures.Size();
+                            if (textureIndex < textureCount)
+                            {
+                                const Value& texture = textures[textureIndex];
+                                if (texture.HasMember(s_pSourceProperty) && texture[s_pSourceProperty].IsInt())
+                                {
+                                    index = texture[s_pSourceProperty].GetInt();
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -387,226 +430,122 @@ uint64_t AssetDatabaseBuilder::GetTextureIndex(const Document& json, uint64_t ma
     return index;
 }
 
-/*
-ComponentType AssetDatabaseBuilder::GetComponentType(const char *pGLTFType, int glTFComponentType)
-{
-    static constexpr uint32_t cglTFByteCode = 5120;
-    static constexpr uint32_t cglTFUnsignedByteCode = 5121;
-    static constexpr uint32_t cglTFShortCode = 5122;
-    static constexpr uint32_t cglTFUnsignedShortCode = 5123;
-    static constexpr uint32_t cglTUnsignedIntCode = 5125;
-    static constexpr uint32_t cglTFFloatCode = 5126;
-
-    static constexpr const char *s_pGLTFVectorTypes[] =
-    {
-        "VEC2",
-        "VEC3",
-        "VEC4",
-        "MAT2",
-        "MAT3",
-        "MAT4"
-    };
-
-    static constexpr ComponentType s_VectorTypes[] =
-    {
-        ComponentType::Vec2,
-        ComponentType::Vec3,
-        ComponentType::Vec4,
-        ComponentType::Matrix2x2,
-        ComponentType::Matrix3x3,
-        ComponentType::Matrix4x4
-    };
-
-    if (strcmp(pGLTFType, "SCALAR") == 0)
-    {
-        switch (glTFComponentType)
-        {
-        case cglTFByteCode:
-        case cglTFUnsignedByteCode:
-            return ComponentType::Scalar_Byte;
-        case cglTFShortCode:
-        case cglTFUnsignedShortCode:
-            return ComponentType::Scalar_Short;
-        case cglTUnsignedIntCode:
-            return ComponentType::Scalar_Int;
-        case cglTFFloatCode:
-            return ComponentType::Scalar_Float;
-        default:
-            return ComponentType::Unknown;
-        }
-    }
-
-    for (size_t i = 0; i < ARRAY_SIZE(s_pGLTFVectorTypes); ++i)
-    {
-        if (strcmp(pGLTFType, s_pGLTFVectorTypes[i]) == 0)
-        {
-            return s_VectorTypes[i];
-        }
-    }
-
-    return ComponentType::Unknown;
-}
-
-bool AssetDatabaseBuilder::InsertBufferViewMetadata(Document &json)
+void AssetDatabaseBuilder::GetBufferView(const Document& json, SizeType accessorIndex, BufferView& oView)
 {
     static constexpr const char s_pAccessorsProperty[] = "accessors";
     static constexpr const char s_pBufferViewsProperty[] = "bufferViews";
     static constexpr const char s_pBufferViewProperty[] = "bufferView";
     static constexpr const char s_pByteOffsetProperty[] = "byteOffset";
-    static constexpr const char s_pComponentTypeProperty[] = "componentType";
-    static constexpr const char s_pTypeProperty[] = "type";
-    static constexpr const char s_pCountProperty[] = "count";
+    static constexpr const char s_pByteLengthProperty[] = "byteLength";
+    static constexpr const char s_pByteStrideProperty[] = "byteStride";
     static constexpr const char s_pBufferProperty[] = "buffer";
 
-    if (
-        json.HasMember(s_pAccessorsProperty) && json[s_pAccessorsProperty].IsArray() &&
+    if (json.HasMember(s_pAccessorsProperty) && json[s_pAccessorsProperty].IsArray() &&
         json.HasMember(s_pBufferViewsProperty) && json[s_pBufferViewsProperty].IsArray())
     {
-        Value &bufferViews = json[s_pBufferViewsProperty];
-        Value &accessors = json[s_pAccessorsProperty];
-        SizeType accessorCount = accessors.Size();
+        const Value& accessors = json[s_pAccessorsProperty];
+        const Value& bufferViews = json[s_pBufferViewsProperty];
+        const SizeType accessorCount = accessors.Size();
 
-        for (SizeType i = 0; i < accessorCount; ++i)
+        SALVATION_ASSERT(accessorIndex < accessorCount);
+
+        const Value& accessor = accessors[accessorIndex];
+        if (accessor.HasMember(s_pBufferViewProperty) && accessor[s_pBufferViewProperty].IsInt())
         {
-            Value &accessor = accessors[i];
-            if (accessor.HasMember(s_pBufferViewProperty) && accessor[s_pBufferViewProperty].IsInt())
+            const int bufferViewIndex = accessor[s_pBufferViewProperty].GetInt();
+            const Value& bufferView = bufferViews[bufferViewIndex];
+
+            if (bufferView.HasMember(s_pBufferProperty) && bufferView[s_pBufferProperty].IsInt() &&
+                bufferView.HasMember(s_pByteLengthProperty) && bufferView[s_pByteLengthProperty].IsInt())
             {
-                int bufferViewIndex = accessor[s_pBufferViewProperty].GetInt();
-                Value &bufferView = bufferViews[bufferViewIndex];
+                oView.m_bufferIndex = bufferView[s_pBufferProperty].GetInt();
+                oView.m_byteSize = bufferView[s_pByteLengthProperty].GetInt();
 
-                if (
-                    accessor.HasMember(s_pTypeProperty) && accessor[s_pTypeProperty].IsString() &&
-                    accessor.HasMember(s_pCountProperty) && accessor[s_pCountProperty].IsInt() &&
-                    accessor.HasMember(s_pComponentTypeProperty) && accessor[s_pComponentTypeProperty].IsInt() &&
-                    bufferView.HasMember(s_pBufferProperty) && bufferView[s_pBufferProperty].IsInt())
+                uint64_t accessorByteOffset = 0;
+                uint64_t bufferViewByteOffset = 0;
+                uint64_t bufferViewByteStride = 1;
+
+                if (accessor.HasMember(s_pByteOffsetProperty) && accessor[s_pByteOffsetProperty].IsInt())
                 {
-                    int64_t bufferId = bufferView[s_pBufferProperty].GetInt() + 1; // +1 since sqlite integer primary keys start at 1
+                    accessorByteOffset = accessor[s_pByteOffsetProperty].GetInt();
+                }
 
-                    const char *pType = accessor[s_pTypeProperty].GetString();
-                    int glTFComponentType = accessor[s_pComponentTypeProperty].GetInt();
-                    int count = accessor[s_pCountProperty].GetInt();
+                if (bufferView.HasMember(s_pByteOffsetProperty) && bufferView[s_pByteOffsetProperty].IsInt())
+                {
+                    bufferViewByteOffset = bufferView[s_pByteOffsetProperty].GetInt();
+                }
 
-                    ComponentType componentType = GetComponentType(pType, glTFComponentType);
-                    int32_t stride = AssetDatabase::ComponentTypeByteSize(componentType);
-                    int64_t byteSize = stride * static_cast<int64_t>(count);
+                if (bufferView.HasMember(s_pByteStrideProperty) && bufferView[s_pByteStrideProperty].IsInt())
+                {
+                    bufferViewByteStride = bufferView[s_pByteStrideProperty].GetInt();
+                }
 
-                    int64_t accessorByteOffset = 0;
-                    int64_t bufferViewByteOffset = 0;
+                oView.m_byteOffset = accessorByteOffset + bufferViewByteOffset;
+                oView.m_byteStride = bufferViewByteStride;
+            }
+        }
+    }
+}
 
-                    if (accessor.HasMember(s_pByteOffsetProperty) && accessor[s_pByteOffsetProperty].IsInt())
+/// CMP_Feedback_Proc
+/// Feedback function for conversion.
+/// \param[in] fProgress The percentage progress of the texture compression.
+/// \return non-NULL(true) value to abort conversion
+static bool CMP_Feedback(CMP_FLOAT fProgress, CMP_DWORD_PTR pUser1, CMP_DWORD_PTR pUser2)
+{
+    return false;
+}
+
+int64_t AssetDatabaseBuilder::CompressTexture(const char* pSrcFilePath, FILE* pDestFile)
+{
+    int64_t byteSize = 0;
+
+    CMP_MipSet mipSetIn = {};
+    CMP_MipSet mipSetOut = {};
+
+    CMP_ERROR result = CMP_LoadTexture(pSrcFilePath, &mipSetIn);
+
+    if (result == CMP_OK)
+    {
+        // Generate MIP chain if not already generated
+        if (mipSetIn.m_nMipLevels <= 1)
+        {
+            static constexpr CMP_INT s_MinMipSize = 4; // 4x4
+            CMP_GenerateMIPLevels(&mipSetIn, s_MinMipSize);
+        }
+
+        // Compress texture into BC3 for now #todo provide format as argument
+        {
+            KernelOptions kernelOptions = {};
+            kernelOptions.format = CMP_FORMAT_BC3;
+            kernelOptions.fquality = 1.0f;
+            kernelOptions.threads = 0; // Auto setting
+
+            result = CMP_ProcessTexture(&mipSetIn, &mipSetOut, kernelOptions, &CMP_Feedback);
+
+            if (result == CMP_OK)
+            {
+                // #todo Properly save the whole mip chain
+                for (int i = 0; i < 1/*mipSetOut.m_nMipLevels*/; ++i)
+                {
+                    CMP_MipLevel* pMipData;
+                    CMP_GetMipLevel(&pMipData, &mipSetOut, i, 0);
+                    int64_t mipByteSize = pMipData->m_dwLinearSize;
+
+                    if (fwrite(pMipData->m_pbData, sizeof(uint8_t), mipByteSize, pDestFile) != mipByteSize)
                     {
-                        accessorByteOffset = accessor[s_pByteOffsetProperty].GetInt();
+                        byteSize = -1;
+                        break;
                     }
 
-                    if (bufferView.HasMember(s_pByteOffsetProperty) && bufferView[s_pByteOffsetProperty].IsInt())
-                    {
-                        bufferViewByteOffset = bufferView[s_pByteOffsetProperty].GetInt();
-                    }
-
-                    int64_t byteOffset = accessorByteOffset + bufferViewByteOffset;
-
-                    if (!InsertBufferViewDataEntry(bufferId, byteSize, byteOffset, stride))
-                    {
-                        return false;
-                    }
+                    byteSize += mipByteSize;
                 }
             }
         }
     }
 
+    CMP_FreeMipSet(&mipSetIn);
+    CMP_FreeMipSet(&mipSetOut);
 
-    return true;
+    return byteSize;
 }
-
-bool AssetDatabaseBuilder::InsertMeshMetadata(Document &json)
-{
-    static constexpr const char cpMeshesProperty[] = "meshes";
-    static constexpr const char cpPrimitivesProperty[] = "primitives";
-    static constexpr const char cpIndicesProperty[] = "indices";
-    static constexpr const char cpMaterialProperty[] = "material";
-    static constexpr const char cpAttributesProperty[] = "attributes";
-
-    if (json.HasMember(cpMeshesProperty) && json[cpMeshesProperty].IsArray())
-    {
-        Value &meshes = json[cpMeshesProperty];
-        SizeType meshCount = meshes.Size();
-
-        for (SizeType meshIndex = 0; meshIndex < meshCount; ++meshIndex)
-        {
-            Value &mesh = meshes[meshIndex];
-
-            if (mesh.HasMember(cpPrimitivesProperty) && mesh[cpPrimitivesProperty].IsArray())
-            {
-                Value &primitives = mesh[cpPrimitivesProperty];
-                SizeType primCount = primitives.Size();
-
-                for (SizeType primIndex = 0; primIndex < primCount; ++primIndex)
-                {
-                    Value &primitive = primitives[primIndex];
-
-                    if (
-                        primitive.HasMember(cpIndicesProperty) && primitive[cpIndicesProperty].IsInt() &&
-                        primitive.HasMember(cpMaterialProperty) && primitive[cpMaterialProperty].IsInt() &&
-                        primitive.HasMember(cpAttributesProperty) && primitive[cpAttributesProperty].IsObject())
-                    {
-                        // +1 since sqlite integer primary keys start at 1
-                        int64_t indexBufferId = primitive[cpIndicesProperty].GetInt() + 1;
-                        int64_t materialId = primitive[cpMaterialProperty].GetInt() + 1;
-
-                        int64_t meshId = InsertMeshDataEntry("Default Name");
-                        int64_t subMeshId = InsertSubMeshDataEntry(meshId, indexBufferId, materialId);
-
-                        Value &attributes = primitive[cpAttributesProperty];
-
-                        if (meshId < 0 || subMeshId < 0 || !InsertVertexStreamsMetadata(attributes, subMeshId))
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return true;
-}
-
-bool AssetDatabaseBuilder::InsertVertexStreamsMetadata(Value &attributes, int64_t subMeshId)
-{
-    static constexpr const char *s_ppAttributeSemantics[] =
-    {
-        "POSITION",
-        "NORMAL",
-        "TANGENT",
-        "TEXCOORD_0",
-        "TEXCOORD_1",
-        "COLOR_0"
-    };
-
-    static_assert(ARRAY_SIZE(s_ppAttributeSemantics) == static_cast<size_t>(AttributeSemantic::Count));
-
-    for (size_t i = 0; i < ARRAY_SIZE(s_ppAttributeSemantics); ++i)
-    {
-        const char *pAttributeSemantic = s_ppAttributeSemantics[i];
-        if (attributes.HasMember(pAttributeSemantic) && attributes[pAttributeSemantic].IsInt())
-        {
-            int bufferViewId = attributes[pAttributeSemantic].GetInt() + 1; // +1 since sqlite integer primary keys start at 1
-            if (!InsertVertexStreamDataEntry(subMeshId, bufferViewId, static_cast<int32_t>(i)))
-            {
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
-
-bool AssetDatabaseBuilder::InsertMetadata(Document &json)
-{
-    return 
-        InsertMaterialMetadata(json) &&
-        InsertBufferViewMetadata(json) && 
-        InsertMeshMetadata(json);
-}
-*/
-

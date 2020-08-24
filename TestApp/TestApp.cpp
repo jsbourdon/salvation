@@ -63,9 +63,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     GpuDevice *pDevice = GpuDevice::CreateDevice();
     
     // Assets loading
-    {
-        AssetDatabase* pAssetDb = LoadDatabase("D:\\Temp\\Assets\\AssetsDB.db");
-    }
+    AssetDatabase* pAssetDb = LoadDatabase("D:/Temp/StartTrek.db");
+    const Texture* pTextures = GetTextures(pAssetDb);
+    const Mesh* pMeshes = GetMeshes(pAssetDb);
+    DestroyDatabase(pAssetDb);
 
     while (!lwgl::events::PumpMessages())
     {

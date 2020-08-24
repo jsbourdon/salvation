@@ -13,7 +13,7 @@ LibraryHandle LibraryLoader::LoadDynamicLibrary(const wchar_t *name)
     const size_t strLength = wcslen(name);
     const size_t bufferSize = (strLength + 5) * sizeof(wchar_t);
 
-    swprintf_s(g_LibraryFileName, ARRAY_SIZE(g_LibraryFileName), L"%s.dll", name);
+    swprintf_s(g_LibraryFileName, SALVATION_ARRAY_SIZE(g_LibraryFileName), L"%s.dll", name);
     LibraryHandle libHdl = reinterpret_cast<LibraryHandle>(LoadLibraryW(g_LibraryFileName));
 
     return libHdl;

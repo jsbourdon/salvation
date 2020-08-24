@@ -6,9 +6,11 @@
 #include <limits>
 #include "asset_assembler/rapidjson/fwd.h"
 #include "Salvation_Common/DataStructures/Vector.h"
+#include "Salvation_Common/Assets/Mesh.h"
 
 using namespace rapidjson;
 using namespace salvation::data;
+using namespace salvation::asset;
 
 namespace asset_assembler
 {
@@ -50,25 +52,24 @@ namespace asset_assembler
                 uint64_t m_byteSize;
             };
 
-            static constexpr uint64_t   cInvalidIndex = std::numeric_limits<uint64_t>::max();
+            static constexpr uint32_t   cInvalidIndex = std::numeric_limits<uint32_t>::max();
             static constexpr const char cpBuffersBinFileName[] = "Buffers.bin";
             static constexpr const char cpTexturesBinFileName[] = "Textures.bin";
 
-            bool        PackData(
-                            const Document& json, 
-                            const char* pSrcRootPath, 
-                            const char* pDestRootPath, 
-                            uint64_t& oTexturesByteSize, 
-                            uint64_t& oMeshesByteSize);
+            template<typename T>
+            static bool WriteData(const T& value, FILE* pFile);
 
-            bool        PackTextures(const Document &json, const char *pSrcRootPath, const char *pDestRootPath, uint64_t& oByteSize);
-            bool        PackMeshes(const Document &json, const char *pSrcRootPath, const char *pDestRootPath, uint64_t& oByteSize);
+            bool        PackData(const Document& json, const char* pSrcRootPath, const char* pDestRootPath);
+            bool        PackTextures(const Document &json, const char *pSrcRootPath, const char *pDestRootPath);
+            bool        PackBuffers(const Document &json, const char *pSrcRootPath, const char *pDestRootPath);
 
             bool        InsertMeta(const Document& json, FILE* pDBFile);
             bool        InsertTexturesMeta(const Document& json, FILE* pDBFile);
             bool        InsertMeshesMeta(const Document& json, FILE* pDBFile);
 
-            uint64_t    GetTextureIndex(const Document& json, uint64_t materialIndex);
+            uint32_t    GetTextureIndex(const Document& json, SizeType materialIndex);
+            void        GetBufferView(const Document& json, SizeType accessorIndex, BufferView& oView);
+            uint32_t    GetSupportedAttributeCount(const Value& attributes);
             int64_t     CompressTexture(const char* pSrcFilePath, FILE* pDestFile);
 
         private:
