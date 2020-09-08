@@ -1,7 +1,7 @@
 #include "asset_assembler/database/AssetDatabaseBuilder.h"
-#include "Salvation_Common/Memory/ThreadHeapAllocator.h"
-#include "Salvation_Common/Core/Defines.h"
-#include "Salvation_Common/FileSystem/FileSystem.h"
+#include "salvation_core/Memory/ThreadHeapAllocator.h"
+#include "salvation_core/Core/Defines.h"
+#include "salvation_core/FileSystem/FileSystem.h"
 
 using namespace asset_assembler::database;
 using namespace salvation::memory;

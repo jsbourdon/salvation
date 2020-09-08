@@ -5,19 +5,18 @@
 #include <cstdint>
 #include <thread>
 #include <chrono>
-#include "LWGL/WindowFactory/WindowFactory.h"
-#include "LWGL/Events/MessagePump.h"
-#include "LWGL_Common/Resources/ResourceHandles.h"
-#include "Salvation_Common/SystemInfo/SystemInfo.h"
-#include "Salvation_Common/Memory/VirtualMemoryAllocator.h"
-#include "Salvation_Common/Memory/ThreadHeapAllocator.h"
-#include "Salvation_Common/Threading/WorkerThread.h"
-#include "Salvation_Common/Assets/AssetDatabase.h"
-#include "LWGL/Device/GfxPlatform.h"
-#include "LWGL/Device/GpuDevice.h"
+#include "salvation_rhi/WindowFactory/WindowFactory.h"
+#include "salvation_rhi/Events/MessagePump.h"
+#include "salvation_rhi/Resources/ResourceHandles.h"
+#include "salvation_core/SystemInfo/SystemInfo.h"
+#include "salvation_core/Memory/VirtualMemoryAllocator.h"
+#include "salvation_core/Memory/ThreadHeapAllocator.h"
+#include "salvation_core/Threading/WorkerThread.h"
+#include "salvation_core/Assets/AssetDatabase.h"
+#include "salvation_rhi/Device/GfxPlatform.h"
+#include "salvation_rhi/Device/GpuDevice.h"
 
-using namespace lwgl;
-using namespace lwgl::external;
+using namespace salvation_rhi;
 using namespace salvation::memory;
 using namespace salvation::threading;
 using namespace salvation::asset;
@@ -57,7 +56,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     int value0 = worker0.Wait();
     int value1 = worker1.Wait();
 
-    WindowHandle hwnd = factory::CreateNewWindow(reinterpret_cast<lwgl::AppHandle>(hInstance), 1920, 1080, L"Salvation");
+    WindowHandle hwnd = factory::CreateNewWindow(reinterpret_cast<salvation_rhi::AppHandle>(hInstance), 1920, 1080, L"Salvation");
     factory::DisplayWindow(hwnd);
 
     GpuDevice *pDevice = GpuDevice::CreateDevice();
@@ -68,7 +67,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     const Mesh* pMeshes = GetMeshes(pAssetDb);
     DestroyDatabase(pAssetDb);
 
-    while (!lwgl::events::PumpMessages())
+    while (!salvation_rhi::events::PumpMessages())
     {
         std::this_thread::sleep_for(100ms);
     }

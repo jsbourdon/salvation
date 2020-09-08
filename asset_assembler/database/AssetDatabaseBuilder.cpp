@@ -1,10 +1,10 @@
 #include <pch.h>
 #include "AssetDatabaseBuilder.h"
-#include "Salvation_Common/Memory/ThreadHeapAllocator.h"
-#include "Salvation_Common/Memory/ThreadHeapSmartPointer.h"
-#include "Salvation_Common/FileSystem/FileSystem.h"
-#include "Salvation_Common/Assets/AssetDatabase.h"
-#include "Salvation_Common/Assets/Texture.h"
+#include "salvation_core/Memory/ThreadHeapAllocator.h"
+#include "salvation_core/Memory/ThreadHeapSmartPointer.h"
+#include "salvation_core/FileSystem/FileSystem.h"
+#include "salvation_core/Assets/AssetDatabase.h"
+#include "salvation_core/Assets/Texture.h"
 #include "rapidjson/document.h"
 #include "3rd/Compressonator/Compressonator/CMP_Framework/CMP_Framework.h"
 
@@ -336,47 +336,6 @@ uint32_t AssetDatabaseBuilder::GetSupportedAttributeCount(const Value& attribute
     return count;
 }
 
-/*
-bool AssetDatabaseBuilder::InsertMaterialMetadata(Document &json)
-{
-    static constexpr const char s_pMaterialsProperty[] = "materials";
-    static constexpr const char s_pPBRProperty[] = "pbrMetallicRoughness";
-    static constexpr const char s_pBaseTextureProperty[] = "baseColorTexture";
-    static constexpr const char s_pIndexProperty[] = "index";
-
-    if (json.HasMember(s_pMaterialsProperty) && json[s_pMaterialsProperty].IsArray())
-    {
-        Value &materials = json[s_pMaterialsProperty];
-        SizeType materialCount = materials.Size();
-
-        for (SizeType i = 0; i < materialCount; ++i)
-        {
-            Value &material = materials[i];
-            if (material.HasMember(s_pPBRProperty) && material[s_pPBRProperty].IsObject())
-            {
-                Value &pbr = material[s_pPBRProperty];
-                if (pbr.HasMember(s_pBaseTextureProperty) && pbr[s_pBaseTextureProperty].IsObject())
-                {
-                    Value &baseTexture = pbr[s_pBaseTextureProperty];
-                    if (baseTexture.HasMember(s_pIndexProperty) && baseTexture[s_pIndexProperty].IsInt())
-                    {
-                        Value &indexProperty = baseTexture[s_pIndexProperty];
-                        int index = indexProperty.GetInt() + 1; // +1 since sqlite integer primary keys start at 1
-
-                        if (!InsertMaterialDataEntry(index))
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return true;
-}
-*/
-
 uint32_t AssetDatabaseBuilder::GetTextureIndex(const Document& json, SizeType materialIndex)
 {
     static constexpr const char s_pTexturesProperty[] = "textures";
@@ -438,7 +397,6 @@ void AssetDatabaseBuilder::GetBufferView(const Document& json, SizeType accessor
     static constexpr const char s_pByteOffsetProperty[] = "byteOffset";
     static constexpr const char s_pByteLengthProperty[] = "byteLength";
     static constexpr const char s_pByteStrideProperty[] = "byteStride";
-    static constexpr const char s_pBufferProperty[] = "buffer";
 
     if (json.HasMember(s_pAccessorsProperty) && json[s_pAccessorsProperty].IsArray() &&
         json.HasMember(s_pBufferViewsProperty) && json[s_pBufferViewsProperty].IsArray())
@@ -455,10 +413,8 @@ void AssetDatabaseBuilder::GetBufferView(const Document& json, SizeType accessor
             const int bufferViewIndex = accessor[s_pBufferViewProperty].GetInt();
             const Value& bufferView = bufferViews[bufferViewIndex];
 
-            if (bufferView.HasMember(s_pBufferProperty) && bufferView[s_pBufferProperty].IsInt() &&
-                bufferView.HasMember(s_pByteLengthProperty) && bufferView[s_pByteLengthProperty].IsInt())
+            if (bufferView.HasMember(s_pByteLengthProperty) && bufferView[s_pByteLengthProperty].IsInt())
             {
-                oView.m_bufferIndex = bufferView[s_pBufferProperty].GetInt();
                 oView.m_byteSize = bufferView[s_pByteLengthProperty].GetInt();
 
                 uint64_t accessorByteOffset = 0;

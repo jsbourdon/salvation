@@ -5,8 +5,8 @@
 #include <vector>
 #include <limits>
 #include "asset_assembler/rapidjson/fwd.h"
-#include "Salvation_Common/DataStructures/Vector.h"
-#include "Salvation_Common/Assets/Mesh.h"
+#include "salvation_core/DataStructures/Vector.h"
+#include "salvation_core/Assets/Mesh.h"
 
 using namespace rapidjson;
 using namespace salvation::data;
