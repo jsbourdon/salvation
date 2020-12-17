@@ -2,7 +2,7 @@
 
 #include <vector>
 
-namespace salvation_rhi
+namespace salvation::rhi
 {
     namespace resources
     {

@@ -2,7 +2,7 @@
 
 #include "salvation_core/Math/Math.h"
 
-namespace salvation_rhi
+namespace salvation::rhi
 {
     using namespace math;
 

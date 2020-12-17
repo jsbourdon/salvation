@@ -16,7 +16,7 @@
 #include "salvation_rhi/Device/GfxPlatform.h"
 #include "salvation_rhi/Device/GpuDevice.h"
 
-using namespace salvation_rhi;
+using namespace salvation::rhi;
 using namespace salvation::memory;
 using namespace salvation::threading;
 using namespace salvation::asset;
@@ -56,18 +56,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     int value0 = worker0.Wait();
     int value1 = worker1.Wait();
 
-    WindowHandle hwnd = factory::CreateNewWindow(reinterpret_cast<salvation_rhi::AppHandle>(hInstance), 1920, 1080, L"Salvation");
+    WindowHandle hwnd = factory::CreateNewWindow(reinterpret_cast<salvation::rhi::AppHandle>(hInstance), 1920, 1080, L"Salvation");
     factory::DisplayWindow(hwnd);
 
     GpuDevice *pDevice = GpuDevice::CreateDevice();
     
     // Assets loading
-    AssetDatabase* pAssetDb = LoadDatabase("D:/Temp/StartTrek.db");
-    const Texture* pTextures = GetTextures(pAssetDb);
-    const Mesh* pMeshes = GetMeshes(pAssetDb);
-    DestroyDatabase(pAssetDb);
+//     AssetDatabase* pAssetDb = LoadDatabase("D:/Temp/StartTrek.db");
+//     const Texture* pTextures = GetTextures(pAssetDb);
+//     const Mesh* pMeshes = GetMeshes(pAssetDb);
+//     DestroyDatabase(pAssetDb);
 
-    while (!salvation_rhi::events::PumpMessages())
+    while (!salvation::rhi::events::PumpMessages())
     {
         std::this_thread::sleep_for(100ms);
     }

@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include "LibraryLoader.h"
 
-using namespace salvation_rhi;
-using namespace salvation_rhi::external;
+using namespace salvation::rhi;
+using namespace salvation::external;
 
 static wchar_t g_LibraryFileName[32];
 

@@ -2,7 +2,7 @@
 
 #include "ResourceUsage.h"
 
-namespace salvation_rhi
+namespace salvation::rhi
 {
     namespace descriptors
     {

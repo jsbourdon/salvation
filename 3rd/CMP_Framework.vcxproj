@@ -152,11 +152,6 @@
     <None Include="Compressonator\Compressonator\CMP_Core\shaders\CopyFiles.bat" />
     <None Include="Compressonator\Compressonator\CMP_Framework\CMP_Framework.def" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Salvation_Common\Salvation_Common.vcxproj">
-      <Project>{47ba147b-3811-44d8-acf8-c8cf87880980}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2F22C2E9-1AD1-48FC-AF1B-9F92E893DEB4}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>

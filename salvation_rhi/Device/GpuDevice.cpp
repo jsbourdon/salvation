@@ -3,9 +3,11 @@
 #include "GfxPlatform.h"
 #include "salvation_core/Libraries/LibraryLoader.h"
 #include "salvation_core/Memory/ThreadHeapAllocator.h"
+#include "salvation_rhi/Commands/GpuCommandQueue.h"
+#include "salvation_rhi/Commands/GpuCommandList.h"
 
-using namespace salvation_rhi;
-using namespace salvation_rhi::external;
+using namespace salvation::rhi;
+using namespace salvation::external;
 using namespace salvation::memory;
 
 GpuDevice::GpuDevice()
@@ -43,28 +45,24 @@ void GpuDevice::DestroyDevice(GpuDevice *pDevice)
     delete pDevice;
 }
 
-CommandQueueHandle GpuDevice::CreateCommandQueue(/*CommandQueueType type*/)
+GpuCommandQueue* GpuDevice::CreateCommandQueue(GpuCommandQueueType type)
 {
-    //SALVATION_ASSERT_MSG(type == CommandQueueType::Graphic, "Unsupported Command Queue type");
-    return Handle_NULL;
+    SALVATION_ASSERT_MSG(type == GpuCommandQueueType::Graphic, "Unsupported Command Queue type");
+
+    return nullptr;
 }
 
-void GpuDevice::DestroyCommandQueue(CommandQueueHandle cmdQueueHdl)
+void GpuDevice::DestroyCommandQueue(GpuCommandQueue* /*pCmdQueue*/)
 {
     
 }
 
-/*GfxCommandList*/void* GpuDevice::CreateGfxCommandList(size_t /*memoryByteSize*/)
+GpuCommandList* GpuDevice::CreateCommandList()
 {
     return nullptr;
 }
 
-void GpuDevice::CloseCommandList(Handle /*cmdBufferHdl*/, void* /*pPackets*/) const
-{
-    
-}
-
-void GpuDevice::DestroyGfxCommandList(/*GfxCommandList *pList*/)
+void GpuDevice::DestroyCommandList(GpuCommandList* pList)
 {
     
 }

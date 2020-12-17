@@ -6,11 +6,14 @@
 #include "salvation_core/DataStructures/PackedArray.h"
 
 using namespace salvation::memory;
-using namespace salvation_rhi::external;
+using namespace salvation::external;
 
-namespace salvation_rhi
+namespace salvation::rhi
 {
     enum class GfxPlatform;
+    enum class GpuCommandQueueType;
+    class GpuCommandQueue;
+    class GpuCommandList;
 
     class GpuDevice
     {
@@ -19,12 +22,11 @@ namespace salvation_rhi
         static GpuDevice*   CreateDevice();
         static void         DestroyDevice(GpuDevice *pDevice);
 
-        CommandQueueHandle  CreateCommandQueue(/*CommandQueueType type*/);
-        void                DestroyCommandQueue(CommandQueueHandle cmdQueueHdl);
+        GpuCommandQueue*    CreateCommandQueue(GpuCommandQueueType type);
+        void                DestroyCommandQueue(GpuCommandQueue* pCmdQueue);
 
-        /*GfxCommandList*/void*     CreateGfxCommandList(size_t memoryByteSize = MiB(1));
-        void                CloseCommandList(Handle cmdBufferHdl, void *pPackets) const;
-        void                DestroyGfxCommandList(/*GfxCommandList *pList*/);
+        GpuCommandList*     CreateCommandList();
+        void                DestroyCommandList(GpuCommandList* pList);
 
     private:
 

@@ -3,7 +3,7 @@
 #include <pch.h>
 #include "salvation_rhi/Events/MessagePump.h"
 
-bool salvation_rhi::events::PumpMessages()
+bool salvation::rhi::events::PumpMessages()
 {
     MSG msg;
     msg.message = WM_NULL;

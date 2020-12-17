@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace salvation_rhi
+namespace salvation::rhi
 {
     namespace descriptors
     {

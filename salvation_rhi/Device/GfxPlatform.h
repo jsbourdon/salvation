@@ -1,6 +1,6 @@
 #pragma once
 
-namespace salvation_rhi
+namespace salvation::rhi
 {
     enum class GfxPlatform
     {

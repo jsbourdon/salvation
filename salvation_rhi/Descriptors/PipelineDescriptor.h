@@ -8,7 +8,7 @@
 #include "PixelFormats.h"
 
 
-namespace salvation_rhi
+namespace salvation::rhi
 {
     using namespace resources;
 

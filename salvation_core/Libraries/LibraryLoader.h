@@ -2,13 +2,13 @@
 
 #include "salvation_rhi/Resources/ResourceHandles.h"
 
-using namespace salvation_rhi;
+using namespace salvation::rhi;
 
-namespace salvation_rhi
+namespace salvation
 {
     namespace external
     {
-        using LibraryHandle = salvation_rhi::LibraryHandle;
+        using LibraryHandle = salvation::rhi::LibraryHandle;
 
         class LibraryLoader
         {

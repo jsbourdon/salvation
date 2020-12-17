@@ -261,9 +261,6 @@
     <ProjectReference Include="..\3rd\CMP_Framework.vcxproj">
       <Project>{2f22c2e9-1ad1-48fc-af1b-9f92e893deb4}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\Salvation_Common\Salvation_Common.vcxproj">
-      <Project>{47ba147b-3811-44d8-acf8-c8cf87880980}</Project>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

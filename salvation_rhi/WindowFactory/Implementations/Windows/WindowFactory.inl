@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include "salvation_rhi/WindowFactory/WindowFactory.h"
 
-using namespace salvation_rhi;
+using namespace salvation::rhi;
 
 struct WindowData
 {
@@ -41,7 +41,7 @@ static void RegisterNewClass(HINSTANCE owner)
     RegisterClassExW(&wcex);
 }
 
-WindowHandle salvation_rhi::factory::CreateNewWindow(AppHandle owner, uint32_t width, uint32_t height, const wchar_t* pTitle)
+WindowHandle salvation::rhi::factory::CreateNewWindow(AppHandle owner, uint32_t width, uint32_t height, const wchar_t* pTitle)
 {
     HINSTANCE ownerHdl = reinterpret_cast<HINSTANCE>(owner);
 
@@ -56,12 +56,12 @@ WindowHandle salvation_rhi::factory::CreateNewWindow(AppHandle owner, uint32_t w
     return reinterpret_cast<WindowHandle>(hWnd);
 }
 
-void salvation_rhi::factory::DisplayWindow(const WindowHandle &hwnd)
+void salvation::rhi::factory::DisplayWindow(const WindowHandle &hwnd)
 {
     ShowWindow(reinterpret_cast<HWND>(hwnd), SW_SHOWDEFAULT);
 }
 
-void salvation_rhi::factory::HideWindow(const WindowHandle &hwnd)
+void salvation::rhi::factory::HideWindow(const WindowHandle &hwnd)
 {
     ShowWindow(reinterpret_cast<HWND>(hwnd), SW_HIDE);
 }

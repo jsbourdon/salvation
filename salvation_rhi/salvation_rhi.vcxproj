@@ -167,6 +167,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Commands\GpuCommandList.h" />
+    <ClInclude Include="Commands\GpuCommandQueue.h" />
     <ClInclude Include="Descriptors\BlendStateDescriptor.h" />
     <ClInclude Include="Descriptors\BufferDescriptor.h" />
     <ClInclude Include="Descriptors\ClearDescriptor.h" />
@@ -193,6 +195,8 @@
     <ClInclude Include="WindowFactory\WindowFactory.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Commands\GpuCommandList.cpp" />
+    <ClCompile Include="Commands\GpuCommandQueue.cpp" />
     <ClCompile Include="Device\GpuDevice.cpp" />
     <ClCompile Include="Events\MessagePump.cpp" />
     <ClCompile Include="pch.cpp">
@@ -204,6 +208,9 @@
     <ClCompile Include="WindowFactory\WindowFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Commands\Implementations\Windows\dx12\GpuCommandList.inl" />
+    <None Include="Commands\Implementations\Windows\dx12\GpuCommandQueue.inl" />
+    <None Include="Device\Implementations\Windows\dx12\GpuDevice.inl" />
     <None Include="Events\Implementations\Windows\MessagePump.inl" />
     <None Include="WindowFactory\Implementations\Windows\WindowFactory.inl" />
   </ItemGroup>

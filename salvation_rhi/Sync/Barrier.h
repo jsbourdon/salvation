@@ -2,7 +2,7 @@
 
 #include "salvation_rhi/Resources/ResourceHandles.h"
 
-namespace salvation_rhi
+namespace salvation::rhi
 {
     namespace sync
     {
