@@ -25,10 +25,9 @@ namespace salvation
         using VertexBufferHandle = ChildResourceHandle<BufferHandle, 0x08>;
         using IndexBufferHandle = ChildResourceHandle<BufferHandle, 0x10>;
 
-        typedef Handle DescriptorTableHandle;
         typedef Handle DescriptorHeapHandle;
         typedef Handle RenderPassHandle;
-        typedef Handle GfxPipelineHandle;
+        typedef Handle PipelineHandle;
 
         typedef uintptr_t WindowHandle;
         typedef uintptr_t AppHandle;
@@ -38,5 +37,8 @@ namespace salvation
         typedef uintptr_t CommandQueueHandle;
         typedef uintptr_t CommandBufferHandle;
         typedef uintptr_t FenceHandle;
+        typedef uintptr_t SwapChainHandle;
+        typedef uintptr_t CommandAllocatorHandle;
+        typedef uintptr_t ShaderResourceLayoutHandle;
     }
 }

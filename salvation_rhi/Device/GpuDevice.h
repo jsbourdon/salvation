@@ -25,8 +25,12 @@ namespace salvation::rhi
         GpuCommandQueue*    CreateCommandQueue(GpuCommandQueueType type);
         void                DestroyCommandQueue(GpuCommandQueue* pCmdQueue);
 
+        CommandAllocatorHandle  CreateCommandAllocator();
+
         GpuCommandList*     CreateCommandList();
         void                DestroyCommandList(GpuCommandList* pList);
+
+
 
     private:
 
@@ -37,6 +41,7 @@ namespace salvation::rhi
 
         bool Init();
 
-        GpuDeviceHandle                 m_DeviceHandle { Handle_NULL };
+        GpuDeviceHandle     m_DeviceHandle { Handle_NULL };
+        SwapChainHandle     m_SwapChainHandle { Handle_NULL };
     };
 }

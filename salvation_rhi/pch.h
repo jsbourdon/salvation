@@ -11,6 +11,7 @@
 #include "framework.h"
 
 #include <cstdint>
+#include <stdint.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <type_traits>
@@ -19,7 +20,11 @@
 #include <utility>
 #include <limits>
 
+#include <d3d12.h>
+#include <dxgi1_6.h>
+
 #include "salvation_core/Core/Defines.h"
 #include "salvation_rhi/Resources/ResourceHandles.h"
+#include "salvation_rhi/Dependencies/d3d12.h"
 
 #endif //PCH_H

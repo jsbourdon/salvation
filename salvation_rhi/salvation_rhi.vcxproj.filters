@@ -60,6 +60,21 @@
     <Filter Include="src\Device\Implementations\Windows\dx12">
       <UniqueIdentifier>{37e5b4b8-e8e4-4d4f-aaa7-816b3402304f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Systems">
+      <UniqueIdentifier>{860984dc-b20c-476a-b1f2-944e56a98249}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Systems\Implementations">
+      <UniqueIdentifier>{ad8a9d37-0051-4d45-a885-fbb4a31ec6f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Systems\Implementations\Windows">
+      <UniqueIdentifier>{ad7e0e13-496e-4e16-b8fd-f585bb5479a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Systems\Implementations\Windows\dx12">
+      <UniqueIdentifier>{d323e2df-3348-4b03-bb77-6c04bbd7ada6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dependencies">
+      <UniqueIdentifier>{dce0bc3a-ba97-469e-94bb-3bbd8512d053}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -68,52 +83,10 @@
     <ClInclude Include="pch.h">
       <Filter>pch</Filter>
     </ClInclude>
-    <ClInclude Include="Descriptors\BlendStateDescriptor.h">
-      <Filter>src\Descriptors</Filter>
-    </ClInclude>
-    <ClInclude Include="Descriptors\BufferDescriptor.h">
-      <Filter>src\Descriptors</Filter>
-    </ClInclude>
-    <ClInclude Include="Descriptors\ClearDescriptor.h">
-      <Filter>src\Descriptors</Filter>
-    </ClInclude>
-    <ClInclude Include="Descriptors\DepthStencilStateDescriptor.h">
-      <Filter>src\Descriptors</Filter>
-    </ClInclude>
-    <ClInclude Include="Descriptors\InputLayoutDescriptor.h">
-      <Filter>src\Descriptors</Filter>
-    </ClInclude>
-    <ClInclude Include="Descriptors\PipelineDescriptor.h">
-      <Filter>src\Descriptors</Filter>
-    </ClInclude>
     <ClInclude Include="Descriptors\PixelFormats.h">
       <Filter>src\Descriptors</Filter>
     </ClInclude>
-    <ClInclude Include="Descriptors\PrimitiveTopology.h">
-      <Filter>src\Descriptors</Filter>
-    </ClInclude>
-    <ClInclude Include="Descriptors\RasterizerStateDescriptor.h">
-      <Filter>src\Descriptors</Filter>
-    </ClInclude>
     <ClInclude Include="Descriptors\ResourceUsage.h">
-      <Filter>src\Descriptors</Filter>
-    </ClInclude>
-    <ClInclude Include="Descriptors\SamplerStateDescriptor.h">
-      <Filter>src\Descriptors</Filter>
-    </ClInclude>
-    <ClInclude Include="Descriptors\ScissorRectDescriptor.h">
-      <Filter>src\Descriptors</Filter>
-    </ClInclude>
-    <ClInclude Include="Descriptors\ShaderDescriptor.h">
-      <Filter>src\Descriptors</Filter>
-    </ClInclude>
-    <ClInclude Include="Descriptors\SurfaceDescriptor.h">
-      <Filter>src\Descriptors</Filter>
-    </ClInclude>
-    <ClInclude Include="Descriptors\TextureDescriptor.h">
-      <Filter>src\Descriptors</Filter>
-    </ClInclude>
-    <ClInclude Include="Descriptors\ViewportDescriptor.h">
       <Filter>src\Descriptors</Filter>
     </ClInclude>
     <ClInclude Include="Device\GfxPlatform.h">
@@ -140,6 +113,63 @@
     <ClInclude Include="Device\GpuDevice.h">
       <Filter>src\Device</Filter>
     </ClInclude>
+    <ClInclude Include="Systems\DeviceSystem.h">
+      <Filter>src\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\CommandSystem.h">
+      <Filter>src\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Systems\SystemEnums.h">
+      <Filter>src\Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptors\Rectangle.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptors\Viewport.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptors\BlendStateDesc.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptors\BufferDesc.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptors\ClearDesc.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptors\DepthStencilStateDesc.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptors\InputLayoutDesc.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptors\PipelineDesc.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptors\RasterizerStateDesc.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptors\SamplerStateDesc.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptors\ScissorRectDesc.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptors\ShaderDesc.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptors\SurfaceDesc.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptors\TextureDesc.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Descriptors\DescriptorTable.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\d3d12.h">
+      <Filter>Dependencies</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Device\GpuDevice.cpp">
@@ -160,6 +190,9 @@
     <ClCompile Include="Commands\GpuCommandQueue.cpp">
       <Filter>src\Commands</Filter>
     </ClCompile>
+    <ClCompile Include="Systems\DeviceSystem.cpp">
+      <Filter>src\Systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Events\Implementations\Windows\MessagePump.inl">
@@ -176,6 +209,9 @@
     </None>
     <None Include="Device\Implementations\Windows\dx12\GpuDevice.inl">
       <Filter>src\Device\Implementations\Windows\dx12</Filter>
+    </None>
+    <None Include="Systems\Implementations\Windows\dx12\DeviceSystem.inl">
+      <Filter>src\Systems\Implementations\Windows\dx12</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -13,8 +13,7 @@
 #include "salvation_core/Memory/ThreadHeapAllocator.h"
 #include "salvation_core/Threading/WorkerThread.h"
 #include "salvation_core/Assets/AssetDatabase.h"
-#include "salvation_rhi/Device/GfxPlatform.h"
-#include "salvation_rhi/Device/GpuDevice.h"
+#include "salvation_rhi/Systems/DeviceSystem.h"
 
 using namespace salvation::rhi;
 using namespace salvation::memory;
@@ -59,7 +58,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     WindowHandle hwnd = factory::CreateNewWindow(reinterpret_cast<salvation::rhi::AppHandle>(hInstance), 1920, 1080, L"Salvation");
     factory::DisplayWindow(hwnd);
 
-    GpuDevice *pDevice = GpuDevice::CreateDevice();
+    GpuDeviceHandle deviceHdl = device::CreateDevice();
     
     // Assets loading
 //     AssetDatabase* pAssetDb = LoadDatabase("D:/Temp/StartTrek.db");
@@ -72,7 +71,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         std::this_thread::sleep_for(100ms);
     }
 
-    GpuDevice::DestroyDevice(pDevice);
+    device::DestroyDevice(deviceHdl);
 
     return 0;
 }
