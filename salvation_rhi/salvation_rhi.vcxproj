@@ -167,8 +167,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Commands\GpuCommandList.h" />
-    <ClInclude Include="Commands\GpuCommandQueue.h" />
     <ClInclude Include="Dependencies\d3d12.h" />
     <ClInclude Include="Descriptors\BlendStateDesc.h" />
     <ClInclude Include="Descriptors\BufferDesc.h" />
@@ -187,8 +185,6 @@
     <ClInclude Include="Descriptors\SurfaceDesc.h" />
     <ClInclude Include="Descriptors\TextureDesc.h" />
     <ClInclude Include="Descriptors\Viewport.h" />
-    <ClInclude Include="Device\GfxPlatform.h" />
-    <ClInclude Include="Device\GpuDevice.h" />
     <ClInclude Include="Events\MessagePump.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
@@ -200,9 +196,6 @@
     <ClInclude Include="WindowFactory\WindowFactory.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Commands\GpuCommandList.cpp" />
-    <ClCompile Include="Commands\GpuCommandQueue.cpp" />
-    <ClCompile Include="Device\GpuDevice.cpp" />
     <ClCompile Include="Events\MessagePump.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -214,9 +207,6 @@
     <ClCompile Include="WindowFactory\WindowFactory.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Commands\Implementations\Windows\dx12\GpuCommandList.inl" />
-    <None Include="Commands\Implementations\Windows\dx12\GpuCommandQueue.inl" />
-    <None Include="Device\Implementations\Windows\dx12\GpuDevice.inl" />
     <None Include="Events\Implementations\Windows\MessagePump.inl" />
     <None Include="Systems\Implementations\Windows\dx12\DeviceSystem.inl" />
     <None Include="WindowFactory\Implementations\Windows\WindowFactory.inl" />

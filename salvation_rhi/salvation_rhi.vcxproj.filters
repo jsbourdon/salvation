@@ -12,9 +12,6 @@
     <Filter Include="src\Descriptors">
       <UniqueIdentifier>{bf22d5d4-941c-43aa-a493-c7cc5191b8ef}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\Device">
-      <UniqueIdentifier>{ebff8e5e-f97b-41dd-bc18-e334278f2d15}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\Events">
       <UniqueIdentifier>{ecdeb703-1709-4b7e-9f6f-10b627e0d2fe}</UniqueIdentifier>
     </Filter>
@@ -38,27 +35,6 @@
     </Filter>
     <Filter Include="src\WindowFactory\Implementations\Windows">
       <UniqueIdentifier>{60ded7f9-9337-4b8d-93f9-23fb36e409ad}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Commands">
-      <UniqueIdentifier>{83213138-7c75-4004-b91d-baadcef0a5ae}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Commands\Implementations">
-      <UniqueIdentifier>{d257d46c-4384-4c74-b692-0d8292dca874}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Commands\Implementations\Windows">
-      <UniqueIdentifier>{99536b98-b86e-4d14-9694-f4ac1b64d95c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Commands\Implementations\Windows\dx12">
-      <UniqueIdentifier>{4d7772e1-aee0-4491-8941-67964d8163c4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Device\Implementations">
-      <UniqueIdentifier>{e9f57f2e-5caa-4166-8f7b-46f1fc8bc160}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Device\Implementations\Windows">
-      <UniqueIdentifier>{4483ea4b-78a6-4084-a57e-5f54c21f7ae6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Device\Implementations\Windows\dx12">
-      <UniqueIdentifier>{37e5b4b8-e8e4-4d4f-aaa7-816b3402304f}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\Systems">
       <UniqueIdentifier>{860984dc-b20c-476a-b1f2-944e56a98249}</UniqueIdentifier>
@@ -89,9 +65,6 @@
     <ClInclude Include="Descriptors\ResourceUsage.h">
       <Filter>src\Descriptors</Filter>
     </ClInclude>
-    <ClInclude Include="Device\GfxPlatform.h">
-      <Filter>src\Device</Filter>
-    </ClInclude>
     <ClInclude Include="Events\MessagePump.h">
       <Filter>src\Events</Filter>
     </ClInclude>
@@ -103,15 +76,6 @@
     </ClInclude>
     <ClInclude Include="Resources\ResourceHandles.h">
       <Filter>src\Resources</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\GpuCommandList.h">
-      <Filter>src\Commands</Filter>
-    </ClInclude>
-    <ClInclude Include="Commands\GpuCommandQueue.h">
-      <Filter>src\Commands</Filter>
-    </ClInclude>
-    <ClInclude Include="Device\GpuDevice.h">
-      <Filter>src\Device</Filter>
     </ClInclude>
     <ClInclude Include="Systems\DeviceSystem.h">
       <Filter>src\Systems</Filter>
@@ -172,9 +136,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Device\GpuDevice.cpp">
-      <Filter>src\Device</Filter>
-    </ClCompile>
     <ClCompile Include="Events\MessagePump.cpp">
       <Filter>src\Events</Filter>
     </ClCompile>
@@ -183,12 +144,6 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>pch</Filter>
-    </ClCompile>
-    <ClCompile Include="Commands\GpuCommandList.cpp">
-      <Filter>src\Commands</Filter>
-    </ClCompile>
-    <ClCompile Include="Commands\GpuCommandQueue.cpp">
-      <Filter>src\Commands</Filter>
     </ClCompile>
     <ClCompile Include="Systems\DeviceSystem.cpp">
       <Filter>src\Systems</Filter>
@@ -200,15 +155,6 @@
     </None>
     <None Include="WindowFactory\Implementations\Windows\WindowFactory.inl">
       <Filter>src\WindowFactory\Implementations\Windows</Filter>
-    </None>
-    <None Include="Commands\Implementations\Windows\dx12\GpuCommandList.inl">
-      <Filter>src\Commands\Implementations\Windows\dx12</Filter>
-    </None>
-    <None Include="Commands\Implementations\Windows\dx12\GpuCommandQueue.inl">
-      <Filter>src\Commands\Implementations\Windows\dx12</Filter>
-    </None>
-    <None Include="Device\Implementations\Windows\dx12\GpuDevice.inl">
-      <Filter>src\Device\Implementations\Windows\dx12</Filter>
     </None>
     <None Include="Systems\Implementations\Windows\dx12\DeviceSystem.inl">
       <Filter>src\Systems\Implementations\Windows\dx12</Filter>

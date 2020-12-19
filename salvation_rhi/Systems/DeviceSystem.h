@@ -1,15 +1,16 @@
 #pragma once
 
 #include "salvation_rhi/Resources/ResourceHandles.h"
+#include "salvation_rhi/Systems/SystemEnums.h"
 
 namespace salvation::rhi
 {
-    enum class GpuCommandQueueType;
+    enum class CommandType;
 
     namespace device
     {
         GpuDeviceHandle             CreateDevice();
-        CommandQueueHandle          CreateCommandQueue(GpuDeviceHandle deviceHdl, GpuCommandQueueType type);
+        CommandQueueHandle          CreateCommandQueue(GpuDeviceHandle deviceHdl, CommandType type);
         CommandAllocatorHandle      CreateCommandAllocator(GpuDeviceHandle deviceHdl);
         CommandBufferHandle         CreateCommandBuffer(GpuDeviceHandle deviceHdl);
         SwapChainHandle             CreateSwapChain(GpuDeviceHandle deviceHdl);

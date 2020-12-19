@@ -59,6 +59,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     factory::DisplayWindow(hwnd);
 
     GpuDeviceHandle deviceHdl = device::CreateDevice();
+    CommandQueueHandle cmdQueueHdl = device::CreateCommandQueue(deviceHdl, CommandType::Graphics);
     
     // Assets loading
 //     AssetDatabase* pAssetDb = LoadDatabase("D:/Temp/StartTrek.db");
@@ -72,6 +73,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     }
 
     device::DestroyDevice(deviceHdl);
+    device::DestroyCommandQueue(cmdQueueHdl);
 
     return 0;
 }

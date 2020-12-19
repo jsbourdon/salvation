@@ -5,6 +5,18 @@
 
 using namespace salvation::rhi;
 
+template<typename PtrType, typename HandleType>
+static inline void AsType(PtrType& pPtr, HandleType handle)
+{
+    pPtr = reinterpret_cast<PtrType>(handle);
+}
+
+template<typename PtrType, typename HandleType>
+static inline void AsHandle(const PtrType pPtr, HandleType& handle)
+{
+    handle = reinterpret_cast<HandleType>(pPtr);
+}
+
 static bool GetHardwareAdapter(
     IDXGIFactory1* pFactory,
     IDXGIAdapter1** ppAdapter)
@@ -103,7 +115,7 @@ GpuDeviceHandle device::CreateDevice()
                 D3D_FEATURE_LEVEL_12_1,
                 IID_PPV_ARGS(&pDevice))))
             {
-                deviceHdl = reinterpret_cast<GpuDeviceHandle>(pDevice);
+                AsHandle(pDevice, deviceHdl);
             }
         }
     }
@@ -111,9 +123,40 @@ GpuDeviceHandle device::CreateDevice()
     return deviceHdl;
 }
 
-CommandQueueHandle device::CreateCommandQueue(GpuDeviceHandle /*deviceHdl*/, GpuCommandQueueType /*type*/)
+CommandQueueHandle device::CreateCommandQueue(GpuDeviceHandle deviceHdl, CommandType type)
 {
-    return Handle_NULL;
+    CommandQueueHandle cmdQueueHandle = Handle_NULL;
+    ID3D12Device* pDevice;
+    AsType(pDevice, deviceHdl);
+
+    D3D12_COMMAND_LIST_TYPE cmdType;
+    switch (type)
+    {
+    case CommandType::Graphics:
+        cmdType = D3D12_COMMAND_LIST_TYPE_DIRECT;
+        break;
+    case CommandType::AsyncCompute:
+        cmdType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+        break;
+    case CommandType::Copy:
+        cmdType = D3D12_COMMAND_LIST_TYPE_COPY;
+        break;
+    default:
+        cmdType = D3D12_COMMAND_LIST_TYPE_DIRECT;
+        SALVATION_ASSERT_MSG(false, "Invalid CommandType");
+    }
+
+    D3D12_COMMAND_QUEUE_DESC queueDesc = {};
+    queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+    queueDesc.Type = cmdType;
+
+    ID3D12CommandQueue* pCmdQueue;
+    if (SUCCEEDED(pDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&pCmdQueue))))
+    {
+        AsHandle(pCmdQueue, cmdQueueHandle);
+    }
+
+    return cmdQueueHandle;
 }
 
 CommandAllocatorHandle device::CreateCommandAllocator(GpuDeviceHandle /*deviceHdl*/)
@@ -152,9 +195,11 @@ void device::DestroyDevice(GpuDeviceHandle hdl)
     pDevice->Release();
 }
 
-void device::DestroyCommandQueue(CommandQueueHandle /*hdl*/)
+void device::DestroyCommandQueue(CommandQueueHandle hdl)
 {
-
+    ID3D12CommandQueue* pCmdQueue;
+    AsType(pCmdQueue, hdl);
+    pCmdQueue->Release();
 }
 
 void device::DestroyCommandAllocator(CommandAllocatorHandle /*hdl*/)
