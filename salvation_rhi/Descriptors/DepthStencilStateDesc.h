@@ -40,14 +40,14 @@ namespace salvation::rhi
 
         struct DepthStencilStateDesc
         {
-            StencilOperationDesc FrontFaceStencil;
-            StencilOperationDesc BackFaceStencil;
-            ComparisonFunction DepthFunction;
-            uint8_t StencilReadMask;
-            uint8_t StencilWriteMask;
-            bool IsDepthTestEnabled;
-            bool IsDepthWriteEnabled;
-            bool IsStencilEnabled;
+            StencilOperationDesc FrontFaceStencil {};
+            StencilOperationDesc BackFaceStencil {};
+            ComparisonFunction DepthFunction {};
+            uint8_t StencilReadMask {};
+            uint8_t StencilWriteMask {};
+            bool IsDepthTestEnabled {};
+            bool IsDepthWriteEnabled {};
+            bool IsStencilEnabled {};
         };
     }
 }

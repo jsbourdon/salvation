@@ -431,14 +431,6 @@ static D3D12_BLEND ToNativeBlend(BlendValue value)
     }
 }
 
-/*
-D3D12_COLOR_WRITE_ENABLE_RED	= 1,
-        D3D12_COLOR_WRITE_ENABLE_GREEN	= 2,
-        D3D12_COLOR_WRITE_ENABLE_BLUE	= 4,
-        D3D12_COLOR_WRITE_ENABLE_ALPHA	= 8,
-        D3D12_COLOR_WRITE_ENABLE_ALL	= ( ( ( D3D12_COLOR_WRITE_ENABLE_RED | D3D12_COLOR_WRITE_ENABLE_GREEN )  | D3D12_COLOR_WRITE_ENABLE_BLUE )  | D3D12_COLOR_WRITE_ENABLE_ALPHA )
-*/
-
 static D3D12_COLOR_WRITE_ENABLE ToNativeWriteMask(bool colorWrite, bool alphaWrite)
 {
     D3D12_COLOR_WRITE_ENABLE writeMask = static_cast<D3D12_COLOR_WRITE_ENABLE>(colorWrite ?
@@ -448,17 +440,238 @@ static D3D12_COLOR_WRITE_ENABLE ToNativeWriteMask(bool colorWrite, bool alphaWri
     return writeMask;
 }
 
+static D3D12_CULL_MODE ToNativeCullMode(CullMode cullMode)
+{
+    switch(cullMode)
+    {
+    case CullMode::None:
+        return D3D12_CULL_MODE_NONE;
+    case CullMode::Front:
+        return D3D12_CULL_MODE_FRONT;
+    case CullMode::Back:
+        return D3D12_CULL_MODE_BACK;
+    default:
+        SALVATION_FAIL();
+        return D3D12_CULL_MODE_NONE;
+    }
+}
+
+static D3D12_COMPARISON_FUNC ToNativeComparisonFunc(ComparisonFunction func)
+{
+    switch(func)
+    {
+    case ComparisonFunction::NEVER:
+        return D3D12_COMPARISON_FUNC_NEVER;
+    case ComparisonFunction::LESS:
+        return D3D12_COMPARISON_FUNC_LESS;
+    case ComparisonFunction::EQUAL:
+        return D3D12_COMPARISON_FUNC_EQUAL;
+    case ComparisonFunction::LESS_EQUAL:
+        return D3D12_COMPARISON_FUNC_LESS_EQUAL;
+    case ComparisonFunction::GREATER:
+        return D3D12_COMPARISON_FUNC_GREATER;
+    case ComparisonFunction::NOT_EQUAL:
+        return D3D12_COMPARISON_FUNC_NOT_EQUAL;
+    case ComparisonFunction::GREATER_EQUAL:
+        return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+    case ComparisonFunction::ALWAYS:
+        return D3D12_COMPARISON_FUNC_ALWAYS;
+    default:
+        SALVATION_FAIL();
+        return D3D12_COMPARISON_FUNC_ALWAYS;
+    }
+}
+
+static D3D12_STENCIL_OP ToNativeStencilOp(StencilOperation stencilOp)
+{
+    switch(stencilOp)
+    {
+    case StencilOperation::KEEP:
+        return D3D12_STENCIL_OP_KEEP;
+    case StencilOperation::ZERO:
+        return D3D12_STENCIL_OP_ZERO;
+    case StencilOperation::REPLACE:
+        return D3D12_STENCIL_OP_REPLACE;
+    case StencilOperation::INCR_SAT:
+        return D3D12_STENCIL_OP_INCR_SAT;
+    case StencilOperation::DECR_SAT:
+        return D3D12_STENCIL_OP_DECR_SAT;
+    case StencilOperation::INVERT:
+        return D3D12_STENCIL_OP_INVERT;
+    case StencilOperation::INCR:
+        return D3D12_STENCIL_OP_INCR;
+    case StencilOperation::DECR:
+        return D3D12_STENCIL_OP_DECR;
+    default:
+        SALVATION_FAIL();
+        return D3D12_STENCIL_OP_KEEP;
+    }
+}
+
+/*
+enum class PixelFormat
+        {
+            
+            EnumCount
+        };
+*/
+
+static DXGI_FORMAT ToNativeFormat(PixelFormat format)
+{
+    switch (format)
+    {
+    case PixelFormat::Unknown:
+        return DXGI_FORMAT_UNKNOWN;
+    case PixelFormat::R32G32B32A32_FLOAT:
+        return DXGI_FORMAT_R32G32B32A32_FLOAT;
+    case PixelFormat::R32G32B32A32_UINT:
+        return DXGI_FORMAT_R32G32B32A32_UINT;
+    case PixelFormat::R32G32B32A32_SINT:
+        return DXGI_FORMAT_R32G32B32A32_SINT;
+    case PixelFormat::R32G32B32_FLOAT:
+        return DXGI_FORMAT_R32G32B32_FLOAT;
+    case PixelFormat::R32G32B32_UINT:
+        return DXGI_FORMAT_R32G32B32_UINT;
+    case PixelFormat::R32G32B32_SINT:
+        return DXGI_FORMAT_R32G32B32_SINT;
+    case PixelFormat::R16G16B16A16_FLOAT:
+        return DXGI_FORMAT_R16G16B16A16_FLOAT;
+    case PixelFormat::R16G16B16A16_UNORM:
+        return DXGI_FORMAT_R16G16B16A16_UNORM;
+    case PixelFormat::R16G16B16A16_UINT:
+        return DXGI_FORMAT_R16G16B16A16_UINT;
+    case PixelFormat::R16G16B16A16_SNORM:
+        return DXGI_FORMAT_R16G16B16A16_SNORM;
+    case PixelFormat::R16G16B16A16_SINT:
+        return DXGI_FORMAT_R16G16B16A16_SINT;
+    case PixelFormat::R32G32_FLOAT:
+        return DXGI_FORMAT_R32G32_FLOAT;
+    case PixelFormat::R32G32_UINT:
+        return DXGI_FORMAT_R32G32_UINT;
+    case PixelFormat::R32G32_SINT:
+        return DXGI_FORMAT_R32G32_SINT;
+    case PixelFormat::R10G10B10A2_UNORM:
+        return DXGI_FORMAT_R10G10B10A2_UNORM;
+    case PixelFormat::R10G10B10A2_UINT:
+        return DXGI_FORMAT_R10G10B10A2_UINT;
+    case PixelFormat::R11G11B10_FLOAT:
+        return DXGI_FORMAT_R11G11B10_FLOAT;
+    case PixelFormat::R8G8B8A8_UNORM:
+        return DXGI_FORMAT_R8G8B8A8_UNORM;
+    case PixelFormat::R8G8B8A8_UNORM_SRGB:
+        return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    case PixelFormat::R8G8B8A8_UINT:
+        return DXGI_FORMAT_R8G8B8A8_UINT;
+    case PixelFormat::R8G8B8A8_SNORM:
+        return DXGI_FORMAT_R8G8B8A8_SNORM;
+    case PixelFormat::R8G8B8A8_SINT:
+        return DXGI_FORMAT_R8G8B8A8_SINT;
+    case PixelFormat::R16G16_FLOAT:
+        return DXGI_FORMAT_R16G16_FLOAT;
+    case PixelFormat::R16G16_UNORM:
+        return DXGI_FORMAT_R16G16_UNORM;
+    case PixelFormat::R16G16_UINT:
+        return DXGI_FORMAT_R16G16_UINT;
+    case PixelFormat::R16G16_SNORM:
+        return DXGI_FORMAT_R16G16_SNORM;
+    case PixelFormat::R16G16_SINT:
+        return DXGI_FORMAT_R16G16_SINT;
+    case PixelFormat::D32_FLOAT:
+        return DXGI_FORMAT_D32_FLOAT;
+    case PixelFormat::R32_FLOAT:
+        return DXGI_FORMAT_R32_FLOAT;
+    case PixelFormat::R32_UINT:
+        return DXGI_FORMAT_R32_UINT;
+    case PixelFormat::R32_SINT:
+        return DXGI_FORMAT_R32_SINT;
+    case PixelFormat::D24_UNORM_S8_UINT:
+        return DXGI_FORMAT_D24_UNORM_S8_UINT;
+    case PixelFormat::R24_UNORM_X8_TYPELESS:
+        return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+    case PixelFormat::R8G8_UNORM:
+        return DXGI_FORMAT_R8G8_UNORM;
+    case PixelFormat::R8G8_UINT:
+        return DXGI_FORMAT_R8G8_UINT;
+    case PixelFormat::R8G8_SNORM:
+        return DXGI_FORMAT_R8G8_SNORM;
+    case PixelFormat::R8G8_SINT:
+        return DXGI_FORMAT_R8G8_SINT;
+    case PixelFormat::R16_FLOAT:
+        return DXGI_FORMAT_R16_FLOAT;
+    case PixelFormat::D16_UNORM:
+        return DXGI_FORMAT_D16_UNORM;
+    case PixelFormat::R16_UNORM:
+        return DXGI_FORMAT_R16_UNORM;
+    case PixelFormat::R16_UINT:
+        return DXGI_FORMAT_R16_UINT;
+    case PixelFormat::R16_SNORM:
+        return DXGI_FORMAT_R16_SNORM;
+    case PixelFormat::R16_SINT:
+        return DXGI_FORMAT_R16_SINT;
+    case PixelFormat::R8_UNORM:
+        return DXGI_FORMAT_R8_UNORM;
+    case PixelFormat::R8_UINT:
+        return DXGI_FORMAT_R8_UINT;
+    case PixelFormat::R8_SNORM:
+        return DXGI_FORMAT_R8_SNORM;
+    case PixelFormat::R8_SINT:
+        return DXGI_FORMAT_R8_SINT;
+    case PixelFormat::A8_UNORM:
+        return DXGI_FORMAT_A8_UNORM;
+    case PixelFormat::R1_UNORM:
+        return DXGI_FORMAT_R1_UNORM;
+    case PixelFormat::BC1_UNORM:
+        return DXGI_FORMAT_BC1_UNORM;
+    case PixelFormat::BC1_UNORM_SRGB:
+        return DXGI_FORMAT_BC1_UNORM_SRGB;
+    case PixelFormat::BC2_UNORM:
+        return DXGI_FORMAT_BC2_UNORM;
+    case PixelFormat::BC2_UNORM_SRGB:
+        return DXGI_FORMAT_BC2_UNORM_SRGB;
+    case PixelFormat::BC3_UNORM:
+        return DXGI_FORMAT_BC3_UNORM;
+    case PixelFormat::BC3_UNORM_SRGB:
+        return DXGI_FORMAT_BC3_UNORM_SRGB;
+    case PixelFormat::BC4_UNORM:
+        return DXGI_FORMAT_BC4_UNORM;
+    case PixelFormat::BC4_SNORM:
+        return DXGI_FORMAT_BC4_SNORM;
+    case PixelFormat::BC5_UNORM:
+        return DXGI_FORMAT_BC5_UNORM;
+    case PixelFormat::BC5_SNORM:
+        return DXGI_FORMAT_BC5_SNORM;
+    case PixelFormat::B5G6R5_UNORM:
+        return DXGI_FORMAT_B5G6R5_UNORM;
+    case PixelFormat::B5G5R5A1_UNORM:
+        return DXGI_FORMAT_B5G5R5A1_UNORM;
+    case PixelFormat::B8G8R8A8_UNORM:
+        return DXGI_FORMAT_B8G8R8A8_UNORM;
+    case PixelFormat::B8G8R8A8_UNORM_SRGB:
+        return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+    default:
+        SALVATION_FAIL();
+        return DXGI_FORMAT_UNKNOWN;
+    }
+}
+
 GfxPipelineHandle device::CreateGraphicsPipeline(GpuDeviceHandle deviceHdl, const GfxPipelineDesc& desc)
 {
     ID3D12RootSignature* pRootSig;
     AsType(pRootSig, desc.ResourceLayout);
 
     D3D12_GRAPHICS_PIPELINE_STATE_DESC d3dDesc {};
+    d3dDesc.pRootSignature = pRootSig;
     d3dDesc.VS.pShaderBytecode = desc.VertexShader.Data();
     d3dDesc.VS.BytecodeLength = desc.VertexShader.Size();
     d3dDesc.PS.pShaderBytecode = desc.FragmentShader.Data();
     d3dDesc.PS.BytecodeLength = desc.FragmentShader.Size();
     d3dDesc.NodeMask = 0;
+    d3dDesc.SampleMask = 0;
+    d3dDesc.DSVFormat = ToNativeFormat(desc.DepthFormat);
+    d3dDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+    d3dDesc.SampleDesc.Count = 1;
+    d3dDesc.SampleDesc.Quality = 0;
+
     d3dDesc.BlendState.AlphaToCoverageEnable = FALSE;
     d3dDesc.BlendState.IndependentBlendEnable = FALSE;
 
@@ -480,7 +693,84 @@ GfxPipelineHandle device::CreateGraphicsPipeline(GpuDeviceHandle deviceHdl, cons
         }
     }
 
-    // #todo Continue...
+    D3D12_RASTERIZER_DESC& d3dRasterDesc = d3dDesc.RasterizerState;
+    d3dRasterDesc.AntialiasedLineEnable = FALSE;
+    d3dRasterDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+    d3dRasterDesc.CullMode = ToNativeCullMode(desc.RasterizerState.CullMode);
+    d3dRasterDesc.DepthBias = 0;
+    d3dRasterDesc.DepthBiasClamp = 0;
+    d3dRasterDesc.DepthClipEnable = desc.RasterizerState.DepthClip;
+    d3dRasterDesc.FillMode = D3D12_FILL_MODE_SOLID;
+    d3dRasterDesc.ForcedSampleCount = 0;
+    d3dRasterDesc.FrontCounterClockwise = desc.RasterizerState.Winding == Winding::FrontCounterClockwise;
+    d3dRasterDesc.MultisampleEnable = FALSE;
+    d3dRasterDesc.SlopeScaledDepthBias = 0;
+
+    d3dDesc.DepthStencilState.DepthEnable = desc.DepthStencilState.IsDepthTestEnabled;
+    d3dDesc.DepthStencilState.StencilEnable = desc.DepthStencilState.IsStencilEnabled;
+    d3dDesc.DepthStencilState.DepthFunc = ToNativeComparisonFunc(desc.DepthStencilState.DepthFunction);
+    d3dDesc.DepthStencilState.BackFace.StencilFunc = ToNativeComparisonFunc(desc.DepthStencilState.BackFaceStencil.Function);
+    d3dDesc.DepthStencilState.BackFace.StencilDepthFailOp = ToNativeStencilOp(desc.DepthStencilState.BackFaceStencil.DepthFailOp);
+    d3dDesc.DepthStencilState.BackFace.StencilFailOp = ToNativeStencilOp(desc.DepthStencilState.BackFaceStencil.StencilFailOp);
+    d3dDesc.DepthStencilState.BackFace.StencilPassOp = ToNativeStencilOp(desc.DepthStencilState.BackFaceStencil.DepthStencilPassOp);
+    d3dDesc.DepthStencilState.FrontFace.StencilFunc = ToNativeComparisonFunc(desc.DepthStencilState.FrontFaceStencil.Function);
+    d3dDesc.DepthStencilState.FrontFace.StencilDepthFailOp = ToNativeStencilOp(desc.DepthStencilState.FrontFaceStencil.DepthFailOp);
+    d3dDesc.DepthStencilState.FrontFace.StencilFailOp = ToNativeStencilOp(desc.DepthStencilState.FrontFaceStencil.StencilFailOp);
+    d3dDesc.DepthStencilState.FrontFace.StencilPassOp = ToNativeStencilOp(desc.DepthStencilState.FrontFaceStencil.DepthStencilPassOp);
+    d3dDesc.DepthStencilState.DepthWriteMask = desc.DepthStencilState.IsDepthWriteEnabled ? D3D12_DEPTH_WRITE_MASK_ALL : D3D12_DEPTH_WRITE_MASK_ZERO;
+    d3dDesc.DepthStencilState.StencilReadMask = desc.DepthStencilState.StencilReadMask;
+    d3dDesc.DepthStencilState.StencilWriteMask = desc.DepthStencilState.StencilWriteMask;
+
+    d3dDesc.NumRenderTargets = desc.RenderTargetCount;
+    for(uint32_t rtIndex = 0; rtIndex < desc.RenderTargetCount; ++rtIndex)
+    {
+        d3dDesc.RTVFormats[rtIndex] = ToNativeFormat(desc.RenderTargetFormats[rtIndex]);
+    }
+
+    const uint32_t cInputElementCount = desc.InputLayout.Elements.Size();
+    d3dDesc.InputLayout.NumElements = cInputElementCount;
+
+    data::StaticArray<D3D12_INPUT_ELEMENT_DESC> d3dElements(cInputElementCount);
+    for(uint32_t elementIndex = 0; elementIndex < cInputElementCount; ++elementIndex)
+    {
+        const InputLayoutElement& element = desc.InputLayout.Elements[elementIndex];
+        D3D12_INPUT_ELEMENT_DESC& d3dElement = d3dElements[elementIndex];
+        
+    }
+
+    
+
+#ifdef _DEBUG
+    d3dDesc.Flags = D3D12_PIPELINE_STATE_FLAG_TOOL_DEBUG;
+#else 
+    d3dDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+#endif
+
+    /*
+    struct DepthStencilStateDesc
+    {
+        StencilOperationDesc FrontFaceStencil;
+        StencilOperationDesc BackFaceStencil;
+        ComparisonFunction DepthFunction;
+        uint8_t StencilReadMask;
+        uint8_t StencilWriteMask;
+        bool IsDepthTestEnabled;
+        bool IsDepthWriteEnabled;
+        bool IsStencilEnabled;
+    };
+
+    typedef struct D3D12_DEPTH_STENCIL_DESC
+    {
+        BOOL DepthEnable;
+        D3D12_DEPTH_WRITE_MASK DepthWriteMask;
+        D3D12_COMPARISON_FUNC DepthFunc;
+        BOOL StencilEnable;
+        UINT8 StencilReadMask;
+        UINT8 StencilWriteMask;
+        D3D12_DEPTH_STENCILOP_DESC FrontFace;
+        D3D12_DEPTH_STENCILOP_DESC BackFace;
+    } 	D3D12_DEPTH_STENCIL_DESC;
+    */
 
     return Handle_NULL;
 }

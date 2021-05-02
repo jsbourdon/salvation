@@ -27,6 +27,7 @@ namespace salvation::rhi
             RasterizerStateDesc         RasterizerState {};
             PixelFormat                 RenderTargetFormats[s_OMMaxRenderTargetCount] {};
             PixelFormat                 DepthFormat {};
+            uint32_t                    RenderTargetCount { 0 };
         };
 
         struct ComputePipelineDesc

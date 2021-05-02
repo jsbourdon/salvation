@@ -26,7 +26,7 @@ namespace salvation::rhi
 
         struct InputLayoutDesc
         {
-            data::StaticArray<InputLayoutElement> Elements;
+            data::StaticArray<InputLayoutElement> Elements {};
         };
     }
 }
