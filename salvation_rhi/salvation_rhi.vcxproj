@@ -182,7 +182,6 @@
     <ClInclude Include="Descriptors\ResourceUsage.h" />
     <ClInclude Include="Descriptors\SamplerStateDesc.h" />
     <ClInclude Include="Descriptors\ScissorRectDesc.h" />
-    <ClInclude Include="Descriptors\ShaderDesc.h" />
     <ClInclude Include="Descriptors\ShaderResourceLayoutDesc.h" />
     <ClInclude Include="Descriptors\SurfaceDesc.h" />
     <ClInclude Include="Descriptors\TextureDesc.h" />
@@ -191,6 +190,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resources\ResourceHandles.h" />
+    <ClInclude Include="Resources\Resources.h" />
     <ClInclude Include="Sync\Barrier.h" />
     <ClInclude Include="Systems\CommandSystem.h" />
     <ClInclude Include="Systems\DeviceSystem.h" />

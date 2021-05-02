@@ -119,9 +119,6 @@
     <ClInclude Include="Descriptors\ScissorRectDesc.h">
       <Filter>src\Descriptors</Filter>
     </ClInclude>
-    <ClInclude Include="Descriptors\ShaderDesc.h">
-      <Filter>src\Descriptors</Filter>
-    </ClInclude>
     <ClInclude Include="Descriptors\SurfaceDesc.h">
       <Filter>src\Descriptors</Filter>
     </ClInclude>
@@ -136,6 +133,9 @@
     </ClInclude>
     <ClInclude Include="Descriptors\ShaderResourceLayoutDesc.h">
       <Filter>src\Descriptors</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources\Resources.h">
+      <Filter>src\Resources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

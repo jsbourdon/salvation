@@ -3,8 +3,10 @@
 #include "salvation_rhi/Systems/DeviceSystem.h"
 #include "salvation_rhi/Dependencies/d3d12.h"
 #include "salvation_rhi/Descriptors/ShaderResourceLayoutDesc.h"
+#include "salvation_rhi/Descriptors/PipelineDesc.h"
 #include "salvation_core/DataStructures/Vector.h"
 #include "salvation_core/Memory/StackAllocator.h"
+#include "salvation_core/FileSystem/FileSystem.h"
 
 using namespace salvation;
 using namespace salvation::rhi;
@@ -293,6 +295,11 @@ static D3D12_FILTER ToNativeFilter(SamplerFiltering filter)
     }
 }
 
+Shader device::CreateShader(GpuDeviceHandle /*deviceHdl*/, const char* pFilePath)
+{
+    return salvation::filesystem::ReadFileContent(pFilePath);
+}
+
 ShaderResourceLayoutHandle device::CreateShaderResourceLayout(GpuDeviceHandle deviceHdl, const ShaderResourceLayoutDesc& desc)
 {
     D3D12_VERSIONED_ROOT_SIGNATURE_DESC d3dRootSigDesc;
@@ -374,7 +381,111 @@ ShaderResourceLayoutHandle device::CreateShaderResourceLayout(GpuDeviceHandle de
     return Handle_NULL;
 }
 
-PipelineHandle device::CreatePipeline(GpuDeviceHandle /*deviceHdl*/)
+static D3D12_BLEND_OP ToNativeBlendOperation(BlendOperation blendOp)
+{
+    switch(blendOp)
+    {
+    case BlendOperation::ADD:
+        return D3D12_BLEND_OP_ADD;
+    case BlendOperation::SUBTRACT:
+        return D3D12_BLEND_OP_SUBTRACT;
+    case BlendOperation::REV_SUBTRACT:
+        return D3D12_BLEND_OP_REV_SUBTRACT;
+    case BlendOperation::MIN:
+        return D3D12_BLEND_OP_MIN;
+    case BlendOperation::MAX:
+        return D3D12_BLEND_OP_MAX;
+    default:
+        SALVATION_FAIL();
+        return D3D12_BLEND_OP_ADD;
+    }
+}
+
+static D3D12_BLEND ToNativeBlend(BlendValue value)
+{
+    switch(value)
+    {
+    case BlendValue::ZERO:
+        return D3D12_BLEND_ZERO;
+    case BlendValue::ONE:
+        return D3D12_BLEND_ONE;
+    case BlendValue::SRC_COLOR:
+        return D3D12_BLEND_SRC_COLOR;
+    case BlendValue::INV_SRC_COLOR:
+        return D3D12_BLEND_INV_SRC_COLOR;
+    case BlendValue::SRC_ALPHA:
+        return D3D12_BLEND_SRC_ALPHA;
+    case BlendValue::INV_SRC_ALPHA:
+        return D3D12_BLEND_INV_SRC_ALPHA;
+    case BlendValue::DEST_ALPHA:
+        return D3D12_BLEND_DEST_ALPHA;
+    case BlendValue::INV_DEST_ALPHA:
+        return D3D12_BLEND_INV_DEST_ALPHA;
+    case BlendValue::DEST_COLOR:
+        return D3D12_BLEND_DEST_COLOR;
+    case BlendValue::INV_DEST_COLOR:
+        return D3D12_BLEND_INV_DEST_COLOR;
+    default:
+        SALVATION_FAIL();
+        return D3D12_BLEND_ZERO;
+    }
+}
+
+/*
+D3D12_COLOR_WRITE_ENABLE_RED	= 1,
+        D3D12_COLOR_WRITE_ENABLE_GREEN	= 2,
+        D3D12_COLOR_WRITE_ENABLE_BLUE	= 4,
+        D3D12_COLOR_WRITE_ENABLE_ALPHA	= 8,
+        D3D12_COLOR_WRITE_ENABLE_ALL	= ( ( ( D3D12_COLOR_WRITE_ENABLE_RED | D3D12_COLOR_WRITE_ENABLE_GREEN )  | D3D12_COLOR_WRITE_ENABLE_BLUE )  | D3D12_COLOR_WRITE_ENABLE_ALPHA )
+*/
+
+static D3D12_COLOR_WRITE_ENABLE ToNativeWriteMask(bool colorWrite, bool alphaWrite)
+{
+    D3D12_COLOR_WRITE_ENABLE writeMask = static_cast<D3D12_COLOR_WRITE_ENABLE>(colorWrite ?
+        (D3D12_COLOR_WRITE_ENABLE_RED | D3D12_COLOR_WRITE_ENABLE_GREEN | D3D12_COLOR_WRITE_ENABLE_BLUE) : 0);
+    writeMask = static_cast<D3D12_COLOR_WRITE_ENABLE>(writeMask | (alphaWrite ? D3D12_COLOR_WRITE_ENABLE_ALPHA : 0));
+
+    return writeMask;
+}
+
+GfxPipelineHandle device::CreateGraphicsPipeline(GpuDeviceHandle deviceHdl, const GfxPipelineDesc& desc)
+{
+    ID3D12RootSignature* pRootSig;
+    AsType(pRootSig, desc.ResourceLayout);
+
+    D3D12_GRAPHICS_PIPELINE_STATE_DESC d3dDesc {};
+    d3dDesc.VS.pShaderBytecode = desc.VertexShader.Data();
+    d3dDesc.VS.BytecodeLength = desc.VertexShader.Size();
+    d3dDesc.PS.pShaderBytecode = desc.FragmentShader.Data();
+    d3dDesc.PS.BytecodeLength = desc.FragmentShader.Size();
+    d3dDesc.NodeMask = 0;
+    d3dDesc.BlendState.AlphaToCoverageEnable = FALSE;
+    d3dDesc.BlendState.IndependentBlendEnable = FALSE;
+
+    const uint32_t cRTCount = desc.BlendState.RenderTargetCount;
+    for(uint32_t rtIndex = 0; rtIndex < cRTCount; ++rtIndex)
+    {
+        D3D12_RENDER_TARGET_BLEND_DESC& d3dBlendDesc = d3dDesc.BlendState.RenderTarget[rtIndex];
+        const BlendStateDesc& blendDesc = desc.BlendState;
+
+        if(d3dBlendDesc.BlendEnable = desc.BlendState.IsEnabled)
+        {
+            d3dBlendDesc.BlendOp = ToNativeBlendOperation(blendDesc.ColorOperation);
+            d3dBlendDesc.BlendOpAlpha = ToNativeBlendOperation(blendDesc.AlphaOperation);
+            d3dBlendDesc.DestBlend = ToNativeBlend(blendDesc.DestinationColor);
+            d3dBlendDesc.DestBlendAlpha = ToNativeBlend(blendDesc.DestinationAlpha);
+            d3dBlendDesc.RenderTargetWriteMask = ToNativeWriteMask(blendDesc.ColorWrite, blendDesc.AlphaWrite);
+            d3dBlendDesc.SrcBlend = ToNativeBlend(blendDesc.SourceColor);
+            d3dBlendDesc.SrcBlendAlpha = ToNativeBlend(blendDesc.SourceAlpha);
+        }
+    }
+
+    // #todo Continue...
+
+    return Handle_NULL;
+}
+
+ComputePipelineHandle device::CreateComputePipeline(GpuDeviceHandle /*deviceHdl*/, const ComputePipelineDesc& /*desc*/)
 {
     return Handle_NULL;
 }
@@ -417,7 +528,12 @@ void device::DestroyShaderResourceLayout(ShaderResourceLayoutHandle /*hdl*/)
 
 }
 
-void device::DestroyPipeline(PipelineHandle /*hdl*/)
+void device::DestroyGfxPipeline(GfxPipelineHandle /*hdl*/)
+{
+
+}
+
+void device::DestroyComputePipeline(ComputePipelineHandle /*hdl*/);
 {
 
 }

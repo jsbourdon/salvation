@@ -187,6 +187,7 @@
     <ClInclude Include="Core\Globals.h" />
     <ClInclude Include="DataStructures\IndexFreeList.h" />
     <ClInclude Include="DataStructures\PackedArray.h" />
+    <ClInclude Include="DataStructures\StaticArray.h" />
     <ClInclude Include="DataStructures\Vector.h" />
     <ClInclude Include="FileSystem\FileSystem.h" />
     <ClInclude Include="framework.h" />
@@ -238,6 +239,7 @@
     <ClCompile Include="SystemInfo\SystemInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DataStructures\StaticArray.inl" />
     <None Include="DataStructures\Vector.inl" />
     <None Include="FileSystem\FileSystem.inl" />
     <None Include="Libraries\Implementations\Windows\LibraryLoader.inl" />

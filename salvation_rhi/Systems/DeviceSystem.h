@@ -1,14 +1,18 @@
 #pragma once
 
 #include "salvation_rhi/Resources/ResourceHandles.h"
+#include "salvation_rhi/Resources/Resources.h"
 #include "salvation_rhi/Systems/SystemEnums.h"
 
 namespace salvation::rhi::descriptors
 {
     struct ShaderResourceLayoutDesc;
+    struct GfxPipelineDesc;
+    struct ComputePipelineDesc;
 }
 
 using namespace salvation::rhi::descriptors;
+using namespace salvation::rhi::resources;
 
 namespace salvation::rhi
 {
@@ -34,8 +38,10 @@ namespace salvation::rhi
                                         uint32_t pixelWidth,
                                         uint32_t pixelHeight);
 
+        Shader                      CreateShader(GpuDeviceHandle deviceHdl, const char* pFilePath);
         ShaderResourceLayoutHandle  CreateShaderResourceLayout(GpuDeviceHandle deviceHdl, const ShaderResourceLayoutDesc& desc);
-        PipelineHandle              CreatePipeline(GpuDeviceHandle deviceHdl);
+        GfxPipelineHandle           CreateGraphicsPipeline(GpuDeviceHandle deviceHdl, const GfxPipelineDesc& desc);
+        ComputePipelineHandle       CreateComputePipeline(GpuDeviceHandle deviceHdl, const ComputePipelineDesc& desc);
         DescriptorHeapHandle        CreateDescriptorHeap(GpuDeviceHandle deviceHdl);
 
         void                        DestroyDevice(GpuDeviceHandle hdl);
@@ -44,7 +50,8 @@ namespace salvation::rhi
         void                        DestroyCommandBuffer(CommandBuffer& cmdBuffer);
         void                        DestroySwapChain(SwapChainHandle hdl);
         void                        DestroyShaderResourceLayout(ShaderResourceLayoutHandle hdl);
-        void                        DestroyPipeline(PipelineHandle hdl);
+        void                        DestroyGfxPipeline(GfxPipelineHandle hdl);
+        void                        DestroyComputePipeline(ComputePipelineHandle hdl);
         void                        DestroyDescriptorHeap(DescriptorHeapHandle hdl);
 
         void                        SignalFence(FenceHandle fenceHdl);

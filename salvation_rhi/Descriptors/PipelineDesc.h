@@ -1,12 +1,12 @@
 #pragma once
 
-#include "InputLayoutDesc.h"
-#include "BlendStateDesc.h"
-#include "ShaderDesc.h"
-#include "DepthStencilStateDesc.h"
-#include "RasterizerStateDesc.h"
-#include "PixelFormats.h"
-
+#include "salvation_rhi/Descriptors/InputLayoutDesc.h"
+#include "salvation_rhi/Descriptors/BlendStateDesc.h"
+#include "salvation_rhi/Descriptors/DepthStencilStateDesc.h"
+#include "salvation_rhi/Descriptors/RasterizerStateDesc.h"
+#include "salvation_rhi/Descriptors/PixelFormats.h"
+#include "salvation_rhi/Resources/Resources.h"
+#include "salvation_rhi/Resources/ResourceHandles.h"
 
 namespace salvation::rhi
 {
@@ -14,18 +14,24 @@ namespace salvation::rhi
 
     namespace descriptors
     {
-        struct PipelineDescriptor
+        struct GfxPipelineDesc
         {
             static constexpr size_t     s_OMMaxRenderTargetCount = 8;
 
+            ShaderResourceLayoutHandle  ResourceLayout {};
             InputLayoutDesc             InputLayout {};
-            ShaderDesc                  VertexShader { nullptr, nullptr, nullptr, nullptr, ShaderType::VertexShader };
-            ShaderDesc                  FragmentShader { nullptr, nullptr, nullptr, nullptr, ShaderType::FragmentShader };
+            Shader                      VertexShader {};
+            Shader                      FragmentShader {};
             BlendStateDesc              BlendState {};
             DepthStencilStateDesc       DepthStencilState {};
             RasterizerStateDesc         RasterizerState {};
             PixelFormat                 RenderTargetFormats[s_OMMaxRenderTargetCount] {};
             PixelFormat                 DepthFormat {};
+        };
+
+        struct ComputePipelineDesc
+        {
+
         };
     }
 }

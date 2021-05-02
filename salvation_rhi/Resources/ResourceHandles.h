@@ -27,7 +27,6 @@ namespace salvation
 
         typedef Handle DescriptorHeapHandle;
         typedef Handle RenderPassHandle;
-        typedef Handle PipelineHandle;
 
         typedef uintptr_t WindowHandle;
         typedef uintptr_t AppHandle;
@@ -40,5 +39,7 @@ namespace salvation
         typedef uintptr_t SwapChainHandle;
         typedef uintptr_t CommandAllocatorHandle;
         typedef uintptr_t ShaderResourceLayoutHandle;
+        typedef uintptr_t GfxPipelineHandle;
+        typedef uintptr_t ComputePipelineHandle;
     }
 }

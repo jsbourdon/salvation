@@ -40,6 +40,7 @@ namespace salvation::rhi
             uint32_t RenderTargetCount { 1 };
             bool IsEnabled { true };
             bool ColorWrite { true };
+            bool AlphaWrite { true };
         };
     }
 }

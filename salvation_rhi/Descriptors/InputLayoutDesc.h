@@ -1,14 +1,9 @@
 #pragma once
 
-#include "salvation_core/DataStructures/Vector.h"
+#include "salvation_core/DataStructures/StaticArray.h"
 
 namespace salvation::rhi
 {
-    namespace resources
-    {
-        class Shader;
-    }
-
     namespace descriptors
     {
         enum class InputLayoutSemantic
@@ -31,7 +26,7 @@ namespace salvation::rhi
 
         struct InputLayoutDesc
         {
-            data::Vector<InputLayoutElement> Elements;
+            data::StaticArray<InputLayoutElement> Elements;
         };
     }
 }

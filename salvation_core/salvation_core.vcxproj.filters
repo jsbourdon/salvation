@@ -137,6 +137,9 @@
     <ClInclude Include="Memory\StackAllocator.h">
       <Filter>src\Memory</Filter>
     </ClInclude>
+    <ClInclude Include="DataStructures\StaticArray.h">
+      <Filter>src\DataStructures</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DataStructures\IndexFreeList.cpp">
@@ -197,6 +200,9 @@
     </None>
     <None Include="Libraries\Implementations\Windows\LibraryLoader.inl">
       <Filter>src\Libraries\Implementations\Windows</Filter>
+    </None>
+    <None Include="DataStructures\StaticArray.inl">
+      <Filter>src\DataStructures</Filter>
     </None>
   </ItemGroup>
 </Project>
