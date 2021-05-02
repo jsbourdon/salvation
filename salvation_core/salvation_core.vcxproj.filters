@@ -134,6 +134,9 @@
     <ClInclude Include="Libraries\LibraryLoader.h">
       <Filter>src\Libraries</Filter>
     </ClInclude>
+    <ClInclude Include="Memory\StackAllocator.h">
+      <Filter>src\Memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DataStructures\IndexFreeList.cpp">

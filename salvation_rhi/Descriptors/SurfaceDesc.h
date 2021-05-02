@@ -1,12 +1,14 @@
 #pragma once
 
+#include <cstdint>
+
 namespace salvation::rhi
 {
     namespace descriptors
     {
         enum class PixelFormat;
 
-        struct SurfaceDescriptor
+        struct SurfaceDesc
         {
             uint32_t    Width;
             uint32_t    Height;

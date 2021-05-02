@@ -12,7 +12,7 @@ namespace salvation::rhi
             EnumCount
         };
 
-        struct ShaderDescriptor
+        struct ShaderDesc
         {
             const wchar_t*  FilePath { nullptr };
             const char*     Code { nullptr };

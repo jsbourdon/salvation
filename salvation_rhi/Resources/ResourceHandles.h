@@ -35,7 +35,7 @@ namespace salvation
 
         typedef uintptr_t GpuDeviceHandle;
         typedef uintptr_t CommandQueueHandle;
-        typedef uintptr_t CommandBufferHandle;
+        typedef uintptr_t CommandListHandle;
         typedef uintptr_t FenceHandle;
         typedef uintptr_t SwapChainHandle;
         typedef uintptr_t CommandAllocatorHandle;

@@ -134,6 +134,9 @@
     <ClInclude Include="Dependencies\d3d12.h">
       <Filter>Dependencies</Filter>
     </ClInclude>
+    <ClInclude Include="Descriptors\ShaderResourceLayoutDesc.h">
+      <Filter>src\Descriptors</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Events\MessagePump.cpp">
@@ -159,5 +162,6 @@
     <None Include="Systems\Implementations\Windows\dx12\DeviceSystem.inl">
       <Filter>src\Systems\Implementations\Windows\dx12</Filter>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

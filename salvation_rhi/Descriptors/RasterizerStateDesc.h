@@ -19,7 +19,7 @@ namespace salvation::rhi
             EnumCount
         };
 
-        struct RasterizerStateDescriptor
+        struct RasterizerStateDesc
         {
             CullMode    CullMode { CullMode::Back };
             Winding     Winding { Winding::FrontClockwise };

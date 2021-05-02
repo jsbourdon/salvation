@@ -71,10 +71,14 @@
 
         #define SALVATION_ASSERT(x) SALVATION_ASSERT_MSG(x, "")
         #define SALVATION_ASSERT_ALWAYS_EXEC(x) SALVATION_ASSERT(x)
+        #define SALVATION_FAIL() SALVATION_ASSERT(false)
+        #define SALVATION_FAIL_MSG(msg) SALVATION_ASSERT_MSG(false, msg)
     #else
         #define SALVATION_ASSERT_MSG(x, msg)
         #define SALVATION_ASSERT(x)
         #define SALVATION_ASSERT_ALWAYS_EXEC(x) (x)
+        #define SALVATION_FAIL() 
+        #define SALVATION_FAIL_MSG(msg) 
     #endif
 
 #endif

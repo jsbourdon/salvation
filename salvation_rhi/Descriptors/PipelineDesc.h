@@ -1,10 +1,10 @@
 #pragma once
 
-#include "InputLayoutDescriptor.h"
-#include "BlendStateDescriptor.h"
-#include "ShaderDescriptor.h"
-#include "DepthStencilStateDescriptor.h"
-#include "RasterizerStateDescriptor.h"
+#include "InputLayoutDesc.h"
+#include "BlendStateDesc.h"
+#include "ShaderDesc.h"
+#include "DepthStencilStateDesc.h"
+#include "RasterizerStateDesc.h"
 #include "PixelFormats.h"
 
 
@@ -16,14 +16,14 @@ namespace salvation::rhi
     {
         struct PipelineDescriptor
         {
-            static constexpr size_t s_OMMaxRenderTargetCount = 8;
+            static constexpr size_t     s_OMMaxRenderTargetCount = 8;
 
-            InputLayoutDescriptor       InputLayout {};
-            ShaderDescriptor            VertexShader { nullptr, nullptr, nullptr, nullptr, ShaderType::VertexShader };
-            ShaderDescriptor            FragmentShader { nullptr, nullptr, nullptr, nullptr, ShaderType::FragmentShader };
-            BlendStateDescriptor        BlendState {};
-            DepthStencilStateDescriptor DepthStencilState {};
-            RasterizerStateDescriptor   RasterizerState {};
+            InputLayoutDesc             InputLayout {};
+            ShaderDesc                  VertexShader { nullptr, nullptr, nullptr, nullptr, ShaderType::VertexShader };
+            ShaderDesc                  FragmentShader { nullptr, nullptr, nullptr, nullptr, ShaderType::FragmentShader };
+            BlendStateDesc              BlendState {};
+            DepthStencilStateDesc       DepthStencilState {};
+            RasterizerStateDesc         RasterizerState {};
             PixelFormat                 RenderTargetFormats[s_OMMaxRenderTargetCount] {};
             PixelFormat                 DepthFormat {};
         };

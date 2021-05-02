@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 #include "PixelFormats.h"
 #include "ResourceUsage.h"
 
@@ -21,7 +23,7 @@ namespace salvation::rhi
             UnorderedAccessView = 0x04,
         };
 
-        struct TextureDescriptor
+        struct TextureDesc
         {
             const char* DebugName { nullptr };
             TextureType Type {};

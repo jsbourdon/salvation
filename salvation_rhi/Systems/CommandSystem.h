@@ -39,7 +39,7 @@ namespace salvation::rhi
             uint32_t startInstance);
 
         void ClearDepthStencil(CommandBufferHandle cmdBufferHdl, TextureHandle depthStencilHdl);
-        void ClearRenderTarget(CommandBufferHandle cmdBufferHdl, TextureHandle depthStencilHdl);
+        void ClearRenderTarget(CommandBufferHandle cmdBufferHdl, TextureHandle renderTargetHdl);
 
         // IA
         void SetIndexBuffer(CommandBufferHandle cmdBufferHdl, IndexBufferHandle indexBufferHdl);

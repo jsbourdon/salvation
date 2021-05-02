@@ -29,7 +29,7 @@ namespace salvation::rhi
             EnumCount
         };
 
-        struct BlendStateDescriptor
+        struct BlendStateDesc
         {
             BlendValue SourceColor {};
             BlendValue DestinationColor {};

@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <stdio.h>
-#include <vector>
 #include <limits>
 #include "asset_assembler/rapidjson/fwd.h"
 #include "salvation_core/DataStructures/Vector.h"

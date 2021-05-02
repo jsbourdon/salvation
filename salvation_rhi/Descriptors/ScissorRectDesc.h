@@ -6,7 +6,7 @@ namespace salvation::rhi
 {
     namespace descriptors
     {
-        struct ScissorRectDescriptor
+        struct ScissorRectDesc
         {
             uint32_t m_Left;
             uint32_t m_Top;

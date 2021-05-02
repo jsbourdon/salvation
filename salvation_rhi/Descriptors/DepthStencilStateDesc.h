@@ -30,7 +30,7 @@ namespace salvation::rhi
             EnumCount
         };
 
-        struct StencilOperationDescriptor
+        struct StencilOperationDesc
         {
             StencilOperation StencilFailOp;
             StencilOperation DepthFailOp;
@@ -38,10 +38,10 @@ namespace salvation::rhi
             ComparisonFunction Function;
         };
 
-        struct DepthStencilStateDescriptor
+        struct DepthStencilStateDesc
         {
-            StencilOperationDescriptor FrontFaceStencil;
-            StencilOperationDescriptor BackFaceStencil;
+            StencilOperationDesc FrontFaceStencil;
+            StencilOperationDesc BackFaceStencil;
             ComparisonFunction DepthFunction;
             uint8_t StencilReadMask;
             uint8_t StencilWriteMask;

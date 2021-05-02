@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include "salvation_core/DataStructures/Vector.h"
 
 namespace salvation::rhi
 {
@@ -29,9 +29,9 @@ namespace salvation::rhi
             uint32_t            Slot;
         };
 
-        struct InputLayoutDescriptor
+        struct InputLayoutDesc
         {
-            std::vector<InputLayoutElement> Elements;
+            data::Vector<InputLayoutElement> Elements;
         };
     }
 }

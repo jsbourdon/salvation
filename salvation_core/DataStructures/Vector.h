@@ -13,7 +13,9 @@ namespace salvation
         class Vector
         {
         public:
+            Vector();
             Vector(uint32_t reservedSize);
+            Vector(uint32_t reservedSize, uint32_t size);
             ~Vector();
 
             uint32_t            Add(ValueType& value);

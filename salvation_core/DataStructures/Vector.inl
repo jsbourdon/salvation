@@ -7,12 +7,31 @@
 using namespace salvation::data;
 
 template<typename ValueType, typename AllocatorType>
+Vector<ValueType, AllocatorType>::Vector()
+    : m_pData(nullptr)
+    , m_size(0)
+    , m_reservedSize(0)
+{
+
+}
+
+template<typename ValueType, typename AllocatorType>
 Vector<ValueType, AllocatorType>::Vector(uint32_t reservedSize)
     : m_pData(static_cast<ValueType*>(AllocatorType::Allocate(sizeof(ValueType) * reservedSize)))
     , m_size(0)
     , m_reservedSize(reservedSize)
 {
     SALVATION_ASSERT(reservedSize > 0);
+}
+
+template<typename ValueType, typename AllocatorType>
+Vector<ValueType, AllocatorType>::Vector(uint32_t reservedSize, uint32_t size)
+    : m_pData(static_cast<ValueType*>(AllocatorType::Allocate(sizeof(ValueType)* reservedSize)))
+    , m_size(size)
+    , m_reservedSize(reservedSize)
+{
+    SALVATION_ASSERT(reservedSize > 0);
+    SALVATION_ASSERT(m_reservedSize >= m_size);
 }
 
 template<typename ValueType, typename AllocatorType>

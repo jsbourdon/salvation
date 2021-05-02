@@ -16,7 +16,7 @@ namespace salvation::rhi
             EnumCount
         };
 
-        struct BufferDescriptor
+        struct BufferDesc
         {
             const char*     DebugName;
             size_t          ByteSize;

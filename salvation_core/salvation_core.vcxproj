@@ -196,6 +196,7 @@
     <ClInclude Include="Memory\FrameMemoryAllocator.h" />
     <ClInclude Include="Memory\Memory.h" />
     <ClInclude Include="Memory\RingBuffer.h" />
+    <ClInclude Include="Memory\StackAllocator.h" />
     <ClInclude Include="Memory\SubAllocator.h" />
     <ClInclude Include="Memory\ThreadHeapAllocator.h" />
     <ClInclude Include="Memory\ThreadHeapSmartPointer.h" />
