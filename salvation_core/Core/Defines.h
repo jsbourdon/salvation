@@ -56,17 +56,17 @@
     #define CHECK_HRESULT_RETURN_VALUE(x, v) CHECK_HRESULT_RETURN_VALUE_INTERNAL(hr_##__FILE__##__LINE__, x, v)
 
     #ifdef _DEBUG
-        #define SALVATION_ASSERT_MSG(x, msg)                                                                            \
-        {                                                                                                               \
-            if (!(x))                                                                                                   \
-            {                                                                                                           \
-                char tmp[1024];                                                                                         \
-                sprintf_s(tmp, SALVATION_ARRAY_SIZE(tmp), "Assertion failed: %s\n%s", #x, msg);                                   \
-                printf_s("%s", tmp);                                                                                    \
-                int selection = MessageBoxA(NULL, tmp, "Assert", MB_ABORTRETRYIGNORE | MB_ICONERROR | MB_TASKMODAL);    \
-                if (selection == IDRETRY) DebugBreak();                                                                 \
-                else if (selection == IDABORT) exit(1);                                                                 \
-            }                                                                                                           \
+        #define SALVATION_ASSERT_MSG(x, msg)                                                                                \
+        {                                                                                                                   \
+            if (!(x))                                                                                                       \
+            {                                                                                                               \
+                char tmp[1024];                                                                                             \
+                sprintf_s(tmp, SALVATION_ARRAY_SIZE(tmp), "Assertion failed: %s\n%s", #x, msg);                             \
+                printf_s("%s", tmp);                                                                                        \
+                const int selection = MessageBoxA(NULL, tmp, "Assert", MB_ABORTRETRYIGNORE | MB_ICONERROR | MB_TASKMODAL);  \
+                if (selection == IDRETRY) DebugBreak();                                                                     \
+                else if (selection == IDABORT) exit(1);                                                                     \
+            }                                                                                                               \
         }
 
         #define SALVATION_ASSERT(x) SALVATION_ASSERT_MSG(x, "")

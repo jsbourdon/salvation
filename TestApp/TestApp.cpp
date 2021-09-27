@@ -42,7 +42,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
-    ThreadHeapAllocator::Init(GiB(1), MiB(100));
+    SALVATION_ASSERT_ALWAYS_EXEC(ThreadHeapAllocator::Initialize(GiB(1), MiB(100)));
 
     WorkerThread<WorkerFnctType> worker0(WorkerFunction, GiB(1), MiB(100));
     WorkerThread<WorkerFnctType> worker1(WorkerFunction, GiB(1), MiB(100));

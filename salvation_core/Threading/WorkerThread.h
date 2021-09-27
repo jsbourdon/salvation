@@ -12,16 +12,6 @@ namespace salvation
 {
     namespace threading
     {
-        class WorkerThreadBase
-        {
-        protected:
-
-            WorkerThreadBase()
-            {
-                salvation::memory::ForceGlobalAllocations(true);
-            }
-        };
-
         template<typename R, typename ...A>
         class WorkerThread;
 
@@ -34,10 +24,8 @@ namespace salvation
         // executes the function, notify any waiting thread and yields/sleeps/waits again.
         //
         template<typename ReturnType, typename ...ArgumentTypes>
-        class WorkerThread<ReturnType(ArgumentTypes...)> : WorkerThreadBase
+        class WorkerThread<ReturnType(ArgumentTypes...)>
         {
-            typedef WorkerThreadBase base;
-
         public:
 
             typedef ReturnType(*FunctionType)(ArgumentTypes...);
@@ -75,13 +63,10 @@ using namespace salvation::memory;
 
 template<typename ReturnType, typename ...ArgumentTypes>
 WorkerThread<ReturnType(ArgumentTypes...)>::WorkerThread(FunctionType threadFunction, size_t heapByteSize, size_t initialCommitByteSize)
-    : base()
-    , m_Function(threadFunction)
+    : m_Function(threadFunction)
     , m_Thread(ThreadMain, this, heapByteSize, initialCommitByteSize)
 { 
-    // Enabled in the base class constructor to make sure all
-    // members use the global allocator.
-    salvation::memory::ForceGlobalAllocations(false);
+
 }
 
 template<typename ReturnType, typename ...ArgumentTypes>
@@ -104,15 +89,9 @@ void WorkerThread<ReturnType(ArgumentTypes...)>::Init()
 template<typename ReturnType, typename ...ArgumentTypes>
 void WorkerThread<ReturnType(ArgumentTypes...)>::Shutdown()
 {
-    // Make sure all allocations created during member allocation
-    // will be deallocated from the global allocator.
-    salvation::memory::ForceGlobalAllocations(true);
-
     m_Running = false;
     m_CondValue.notify_all();
     m_Thread.join();
-
-    salvation::memory::ForceGlobalAllocations(false);
 }
 
 template<typename ReturnType, typename ...ArgumentTypes>
@@ -134,7 +113,7 @@ ReturnType WorkerThread<ReturnType(ArgumentTypes...)>::Wait()
 template<typename ReturnType, typename ...ArgumentTypes>
 void WorkerThread<ReturnType(ArgumentTypes...)>::ThreadMain(WorkerThread *thisThread, size_t heapByteSize, size_t initialCommitByteSize)
 {
-    ThreadHeapAllocator::Init(heapByteSize, initialCommitByteSize);
+    SALVATION_ASSERT_ALWAYS_EXEC(ThreadHeapAllocator::Initialize(heapByteSize, initialCommitByteSize));
     thisThread->Execute();
 }
 
@@ -154,4 +133,6 @@ void WorkerThread<ReturnType(ArgumentTypes...)>::Execute()
         m_CondValue.notify_all();
         m_CondValue.wait(lck);
     }
+
+    ThreadHeapAllocator::Shutdown();
 }

@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include "salvation_core/Memory/Memory.h"
+#include "salvation_core/Core/Defines.h"
 
 namespace salvation
 {
@@ -12,15 +13,27 @@ namespace salvation
         public:
 
             ThreadHeapAllocator() = default;
+            ThreadHeapAllocator(const ThreadHeapAllocator&) = delete;
+            ThreadHeapAllocator(ThreadHeapAllocator&&) = delete;
+            ThreadHeapAllocator& operator=(const ThreadHeapAllocator&) = delete;
+            ThreadHeapAllocator& operator=(ThreadHeapAllocator&&) = delete;
             ~ThreadHeapAllocator();
 
-            static void     Init(size_t heapByteSize, size_t initialCommitByteSize);
+            [[nodiscard]] 
+            static bool     Initialize(size_t heapByteSize, size_t initialCommitByteSize);
+            [[nodiscard]]
+            static bool     IsInitialized();
+            static void     Shutdown();
             static void*    Allocate(size_t byteSize);
-            static void     Release(void *pMemory);
+            static bool     WasAllocatedFromThisThread(void *pMemory);
+            static bool     Release(void *pMemory);
             static size_t   AllocationSize(void *pMemory);
             static void     Defrag();
 
         private:
+
+            static constexpr size_t DefaultHeapByteSize = GiB(1);
+            static constexpr size_t DefaultInitialCommitByteSize = MiB(100);
 
             struct FreeRange
             {
@@ -28,8 +41,11 @@ namespace salvation
                 uint32_t m_Count;
             };
 
+            static ThreadHeapAllocator* CreateAllocator(size_t heapByteSize, size_t initialCommitByteSize);
+
             void*       AllocateInternal(size_t byteSize);
-            void        ReleaseInternal(void *pMemory);
+            bool        WasAllocatedFromThisThreadInternal(void* pMemory);
+            bool        ReleaseInternal(void *pMemory);
             size_t      AllocationSizeInternal(void *pMemory);
             void        DefragInternal();
 
@@ -38,12 +54,12 @@ namespace salvation
             void*       PageIndexToAddress(uint32_t index);
             uint32_t    AddressToPageIndex(void *pAddress);
 
-            thread_local static ThreadHeapAllocator s_Allocator;
+            thread_local static ThreadHeapAllocator* s_pAllocator;
 
             uintptr_t   m_MemoryPool { 0 };
             FreeRange*  m_pFreeRanges { nullptr };
             uint32_t*   m_pPages { nullptr };
-            uint32_t    m_SystemPageSize { 0 };
+            size_t      m_SystemPageSize { 0 };
             uint32_t    m_TotalPageCount { 0 };
             uint32_t    m_CommittedPageCount { 0 };
             uint32_t    m_NextPageIndex { 0 };

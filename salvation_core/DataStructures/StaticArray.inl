@@ -15,7 +15,7 @@ StaticArray<ValueType, AllocatorType>::StaticArray()
 }
 
 template<typename ValueType, typename AllocatorType>
-StaticArray<ValueType, AllocatorType>::StaticArray(uint32_t size)
+StaticArray<ValueType, AllocatorType>::StaticArray(size_t size)
     : m_pData(nullptr)
     , m_size(size)
 {

@@ -21,8 +21,6 @@ namespace salvation
 {
     namespace memory
     {
-        void    ForceGlobalAllocations(bool force);
-
         void*   AlignedAlloc(size_t size, size_t alignment);
         void*   AlignedRealloc(void *pMemory, size_t newSize, size_t alignment);
         void    FreeAlignedAlloc(void *pAlloc);

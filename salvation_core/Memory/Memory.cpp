@@ -5,13 +5,6 @@
 
 using namespace salvation::memory;
 
-static bool s_ForceGlobalAlloc = false;
-
-void salvation::memory::ForceGlobalAllocations(bool force)
-{
-    s_ForceGlobalAlloc = force;
-}
-
 void* salvation::memory::AlignedAlloc(size_t size, size_t /*alignment*/)
 {
     // Aligned on page size by default
@@ -39,57 +32,28 @@ void salvation::memory::FreeAlignedAlloc(void *pAlloc)
 
 void* operator new(std::size_t count)
 {
-    if (s_ForceGlobalAlloc)
-    {
-        return VirtualMemoryAllocator::Allocate(count, count);
-    }
-    
     return ThreadHeapAllocator::Allocate(count);
 }
 
 void* operator new[](std::size_t count)
 {
-    if (s_ForceGlobalAlloc)
-    {
-        return VirtualMemoryAllocator::Allocate(count, count);
-    }
-
     return ThreadHeapAllocator::Allocate(count);
 }
 
 void operator delete(void *ptr)
 {
-    if (s_ForceGlobalAlloc)
-    {
-        VirtualMemoryAllocator::Release(ptr);
-    }
-    else
-    {
-        ThreadHeapAllocator::Release(ptr);
-    }
+    ThreadHeapAllocator::Release(ptr);
 }
 
 void operator delete[](void *ptr)
 {
-    if (s_ForceGlobalAlloc)
-    {
-        VirtualMemoryAllocator::Release(ptr);
-    }
-    else
-    {
-        ThreadHeapAllocator::Release(ptr);
-    }
+    ThreadHeapAllocator::Release(ptr);
 }
 
 #ifdef __cpp_aligned_new
 
 void* operator new(std::size_t count, std::align_val_t al)
 {
-    if (s_ForceGlobalAlloc)
-    {
-        return VirtualMemoryAllocator::Allocate(count, count, static_cast<size_t>(al));
-    }
-
     // The allocator already aligns on system page size
     return ThreadHeapAllocator::Allocate(count);
 }
@@ -97,37 +61,18 @@ void* operator new(std::size_t count, std::align_val_t al)
 
 void* operator new[](std::size_t count, std::align_val_t al)
 {
-    if (s_ForceGlobalAlloc)
-    {
-        return VirtualMemoryAllocator::Allocate(count, count, static_cast<size_t>(al));
-    }
-
     // The allocator already aligns on system page size
     return ThreadHeapAllocator::Allocate(count);
 }
 
 void operator delete(void *ptr, std::align_val_t al)
 {
-    if (s_ForceGlobalAlloc)
-    {
-        VirtualMemoryAllocator::Release(ptr);
-    }
-    else
-    {
-        ThreadHeapAllocator::Release(ptr);
-    }
+    ThreadHeapAllocator::Release(ptr);
 }
 
 void operator delete[](void *ptr, std::align_val_t al)
 {
-    if (s_ForceGlobalAlloc)
-    {
-        VirtualMemoryAllocator::Release(ptr);
-    }
-    else
-    {
-        ThreadHeapAllocator::Release(ptr);
-    }
+    ThreadHeapAllocator::Release(ptr);
 }
 
 #endif // __cpp_aligned_new

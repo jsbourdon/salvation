@@ -11,81 +11,415 @@
 using namespace salvation;
 using namespace salvation::rhi;
 
-template<typename PtrType, typename HandleType>
-static inline void AsType(PtrType& pPtr, HandleType handle)
+namespace 
 {
-    pPtr = reinterpret_cast<PtrType>(handle);
-}
-
-template<typename PtrType, typename HandleType>
-static inline void AsHandle(const PtrType pPtr, HandleType& handle)
-{
-    handle = reinterpret_cast<HandleType>(pPtr);
-}
-
-static bool GetHardwareAdapter(
-    IDXGIFactory1* pFactory,
-    IDXGIAdapter1** ppAdapter)
-{
-    *ppAdapter = nullptr;
-
-    ComPtr<IDXGIAdapter1> adapter;
-    ComPtr<IDXGIFactory6> factory6;
-
-    if (SUCCEEDED(pFactory->QueryInterface(IID_PPV_ARGS(&factory6))))
+    template<typename PtrType, typename HandleType>
+    static inline void AsType(PtrType& pPtr, HandleType handle)
     {
-        for (
-            UINT adapterIndex = 0;
-            DXGI_ERROR_NOT_FOUND != factory6->EnumAdapterByGpuPreference(
-                adapterIndex,
-                DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
-                IID_PPV_ARGS(&adapter));
-            ++adapterIndex)
-        {
-            DXGI_ADAPTER_DESC1 desc;
-            adapter->GetDesc1(&desc);
-
-            if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
-            {
-                // Don't select the Basic Render Driver adapter.
-                // If you want a software adapter, pass in "/warp" on the command line.
-                continue;
-            }
-
-            // Check to see whether the adapter supports Direct3D 12, but don't create the
-            // actual device yet.
-            if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_1, _uuidof(ID3D12Device), nullptr)))
-            {
-                *ppAdapter = adapter.Detach();
-                return true;
-            }
-        }
-    }
-    else
-    {
-        for (UINT adapterIndex = 0; DXGI_ERROR_NOT_FOUND != pFactory->EnumAdapters1(adapterIndex, &adapter); ++adapterIndex)
-        {
-            DXGI_ADAPTER_DESC1 desc;
-            adapter->GetDesc1(&desc);
-
-            if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
-            {
-                // Don't select the Basic Render Driver adapter.
-                // If you want a software adapter, pass in "/warp" on the command line.
-                continue;
-            }
-
-            // Check to see whether the adapter supports Direct3D 12, but don't create the
-            // actual device yet.
-            if (SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_1, _uuidof(ID3D12Device), nullptr)))
-            {
-                *ppAdapter = adapter.Detach();
-                return true;
-            }
-        }
+        pPtr = reinterpret_cast<PtrType>(handle);
     }
 
-    return false;
+    template<typename PtrType, typename HandleType>
+    static inline void AsHandle(const PtrType pPtr, HandleType& handle)
+    {
+        handle = reinterpret_cast<HandleType>(pPtr);
+    }
+
+    static bool GetHardwareAdapter(
+        IDXGIFactory1* pFactory,
+        IDXGIAdapter1** ppAdapter)
+    {
+        *ppAdapter = nullptr;
+
+        ComPtr<IDXGIAdapter1> adapter;
+        ComPtr<IDXGIFactory6> factory6;
+
+        if(SUCCEEDED(pFactory->QueryInterface(IID_PPV_ARGS(&factory6))))
+        {
+            for(
+                UINT adapterIndex = 0;
+                DXGI_ERROR_NOT_FOUND != factory6->EnumAdapterByGpuPreference(
+                    adapterIndex,
+                    DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE,
+                    IID_PPV_ARGS(&adapter));
+                ++adapterIndex)
+            {
+                DXGI_ADAPTER_DESC1 desc;
+                adapter->GetDesc1(&desc);
+
+                if(desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+                {
+                    // Don't select the Basic Render Driver adapter.
+                    // If you want a software adapter, pass in "/warp" on the command line.
+                    continue;
+                }
+
+                // Check to see whether the adapter supports Direct3D 12, but don't create the
+                // actual device yet.
+                if(SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_1, _uuidof(ID3D12Device), nullptr)))
+                {
+                    *ppAdapter = adapter.Detach();
+                    return true;
+                }
+            }
+        }
+        else
+        {
+            for(UINT adapterIndex = 0; DXGI_ERROR_NOT_FOUND != pFactory->EnumAdapters1(adapterIndex, &adapter); ++adapterIndex)
+            {
+                DXGI_ADAPTER_DESC1 desc;
+                adapter->GetDesc1(&desc);
+
+                if(desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+                {
+                    // Don't select the Basic Render Driver adapter.
+                    // If you want a software adapter, pass in "/warp" on the command line.
+                    continue;
+                }
+
+                // Check to see whether the adapter supports Direct3D 12, but don't create the
+                // actual device yet.
+                if(SUCCEEDED(D3D12CreateDevice(adapter.Get(), D3D_FEATURE_LEVEL_12_1, _uuidof(ID3D12Device), nullptr)))
+                {
+                    *ppAdapter = adapter.Detach();
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    static D3D12_COMMAND_LIST_TYPE ToNativeCmdType(CommandType type)
+    {
+        D3D12_COMMAND_LIST_TYPE cmdType;
+        switch(type)
+        {
+        case CommandType::Graphics:
+            cmdType = D3D12_COMMAND_LIST_TYPE_DIRECT;
+            break;
+        case CommandType::AsyncCompute:
+            cmdType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+            break;
+        case CommandType::Copy:
+            cmdType = D3D12_COMMAND_LIST_TYPE_COPY;
+            break;
+        default:
+            cmdType = D3D12_COMMAND_LIST_TYPE_DIRECT;
+            SALVATION_ASSERT_MSG(false, "Invalid CommandType");
+        }
+
+        return cmdType;
+    }
+
+    static ID3D12CommandAllocator* CreateCommandAllocator(ID3D12Device* pDevice, D3D12_COMMAND_LIST_TYPE cmdType)
+    {
+        ID3D12CommandAllocator* pCmdAlloc;
+        SALVATION_ASSERT_ALWAYS_EXEC(SUCCEEDED(pDevice->CreateCommandAllocator(cmdType, IID_PPV_ARGS(&pCmdAlloc))));
+        return pCmdAlloc;
+    }
+
+    static ID3D12CommandList* CreateCommandList(ID3D12Device* pDevice, ID3D12CommandAllocator* pCmdAllocator, D3D12_COMMAND_LIST_TYPE cmdType)
+    {
+        ID3D12CommandList* pCmdList = nullptr;
+        SALVATION_ASSERT_ALWAYS_EXEC(SUCCEEDED(pDevice->CreateCommandList(0, cmdType, pCmdAllocator, nullptr, IID_PPV_ARGS(&pCmdList))));
+        return pCmdList;
+    }
+
+    static D3D12_TEXTURE_ADDRESS_MODE ToNativeAddressMode(SamplerAddressMode mode)
+    {
+        switch(mode)
+        {
+        case SamplerAddressMode::Wrap:
+            return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+        case SamplerAddressMode::Clamp:
+            return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+        default:
+            SALVATION_FAIL();
+            return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+        }
+    }
+
+    static D3D12_FILTER ToNativeFilter(SamplerFiltering filter)
+    {
+        switch(filter)
+        {
+        case SamplerFiltering::Point:
+            return D3D12_FILTER_MIN_MAG_MIP_POINT;
+        case SamplerFiltering::Linear:
+            return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+        case SamplerFiltering::Anisotropic:
+            return D3D12_FILTER_ANISOTROPIC;
+        default:
+            SALVATION_FAIL();
+            return D3D12_FILTER_MIN_MAG_MIP_POINT;
+        }
+    }
+
+    static D3D12_BLEND_OP ToNativeBlendOperation(BlendOperation blendOp)
+    {
+        switch(blendOp)
+        {
+        case BlendOperation::ADD:
+            return D3D12_BLEND_OP_ADD;
+        case BlendOperation::SUBTRACT:
+            return D3D12_BLEND_OP_SUBTRACT;
+        case BlendOperation::REV_SUBTRACT:
+            return D3D12_BLEND_OP_REV_SUBTRACT;
+        case BlendOperation::MIN:
+            return D3D12_BLEND_OP_MIN;
+        case BlendOperation::MAX:
+            return D3D12_BLEND_OP_MAX;
+        default:
+            SALVATION_FAIL();
+            return D3D12_BLEND_OP_ADD;
+        }
+    }
+
+    static D3D12_BLEND ToNativeBlend(BlendValue value)
+    {
+        switch(value)
+        {
+        case BlendValue::ZERO:
+            return D3D12_BLEND_ZERO;
+        case BlendValue::ONE:
+            return D3D12_BLEND_ONE;
+        case BlendValue::SRC_COLOR:
+            return D3D12_BLEND_SRC_COLOR;
+        case BlendValue::INV_SRC_COLOR:
+            return D3D12_BLEND_INV_SRC_COLOR;
+        case BlendValue::SRC_ALPHA:
+            return D3D12_BLEND_SRC_ALPHA;
+        case BlendValue::INV_SRC_ALPHA:
+            return D3D12_BLEND_INV_SRC_ALPHA;
+        case BlendValue::DEST_ALPHA:
+            return D3D12_BLEND_DEST_ALPHA;
+        case BlendValue::INV_DEST_ALPHA:
+            return D3D12_BLEND_INV_DEST_ALPHA;
+        case BlendValue::DEST_COLOR:
+            return D3D12_BLEND_DEST_COLOR;
+        case BlendValue::INV_DEST_COLOR:
+            return D3D12_BLEND_INV_DEST_COLOR;
+        default:
+            SALVATION_FAIL();
+            return D3D12_BLEND_ZERO;
+        }
+    }
+
+    static D3D12_COLOR_WRITE_ENABLE ToNativeWriteMask(bool colorWrite, bool alphaWrite)
+    {
+        D3D12_COLOR_WRITE_ENABLE writeMask = static_cast<D3D12_COLOR_WRITE_ENABLE>(colorWrite ?
+            (D3D12_COLOR_WRITE_ENABLE_RED | D3D12_COLOR_WRITE_ENABLE_GREEN | D3D12_COLOR_WRITE_ENABLE_BLUE) : 0);
+        writeMask = static_cast<D3D12_COLOR_WRITE_ENABLE>(writeMask | (alphaWrite ? D3D12_COLOR_WRITE_ENABLE_ALPHA : 0));
+
+        return writeMask;
+    }
+
+    static D3D12_CULL_MODE ToNativeCullMode(CullMode cullMode)
+    {
+        switch(cullMode)
+        {
+        case CullMode::None:
+            return D3D12_CULL_MODE_NONE;
+        case CullMode::Front:
+            return D3D12_CULL_MODE_FRONT;
+        case CullMode::Back:
+            return D3D12_CULL_MODE_BACK;
+        default:
+            SALVATION_FAIL();
+            return D3D12_CULL_MODE_NONE;
+        }
+    }
+
+    static D3D12_COMPARISON_FUNC ToNativeComparisonFunc(ComparisonFunction func)
+    {
+        switch(func)
+        {
+        case ComparisonFunction::NEVER:
+            return D3D12_COMPARISON_FUNC_NEVER;
+        case ComparisonFunction::LESS:
+            return D3D12_COMPARISON_FUNC_LESS;
+        case ComparisonFunction::EQUAL:
+            return D3D12_COMPARISON_FUNC_EQUAL;
+        case ComparisonFunction::LESS_EQUAL:
+            return D3D12_COMPARISON_FUNC_LESS_EQUAL;
+        case ComparisonFunction::GREATER:
+            return D3D12_COMPARISON_FUNC_GREATER;
+        case ComparisonFunction::NOT_EQUAL:
+            return D3D12_COMPARISON_FUNC_NOT_EQUAL;
+        case ComparisonFunction::GREATER_EQUAL:
+            return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+        case ComparisonFunction::ALWAYS:
+            return D3D12_COMPARISON_FUNC_ALWAYS;
+        default:
+            SALVATION_FAIL();
+            return D3D12_COMPARISON_FUNC_ALWAYS;
+        }
+    }
+
+    static D3D12_STENCIL_OP ToNativeStencilOp(StencilOperation stencilOp)
+    {
+        switch(stencilOp)
+        {
+        case StencilOperation::KEEP:
+            return D3D12_STENCIL_OP_KEEP;
+        case StencilOperation::ZERO:
+            return D3D12_STENCIL_OP_ZERO;
+        case StencilOperation::REPLACE:
+            return D3D12_STENCIL_OP_REPLACE;
+        case StencilOperation::INCR_SAT:
+            return D3D12_STENCIL_OP_INCR_SAT;
+        case StencilOperation::DECR_SAT:
+            return D3D12_STENCIL_OP_DECR_SAT;
+        case StencilOperation::INVERT:
+            return D3D12_STENCIL_OP_INVERT;
+        case StencilOperation::INCR:
+            return D3D12_STENCIL_OP_INCR;
+        case StencilOperation::DECR:
+            return D3D12_STENCIL_OP_DECR;
+        default:
+            SALVATION_FAIL();
+            return D3D12_STENCIL_OP_KEEP;
+        }
+    }
+
+    static DXGI_FORMAT ToNativeFormat(PixelFormat format)
+    {
+        switch(format)
+        {
+        case PixelFormat::Unknown:
+            return DXGI_FORMAT_UNKNOWN;
+        case PixelFormat::R32G32B32A32_FLOAT:
+            return DXGI_FORMAT_R32G32B32A32_FLOAT;
+        case PixelFormat::R32G32B32A32_UINT:
+            return DXGI_FORMAT_R32G32B32A32_UINT;
+        case PixelFormat::R32G32B32A32_SINT:
+            return DXGI_FORMAT_R32G32B32A32_SINT;
+        case PixelFormat::R32G32B32_FLOAT:
+            return DXGI_FORMAT_R32G32B32_FLOAT;
+        case PixelFormat::R32G32B32_UINT:
+            return DXGI_FORMAT_R32G32B32_UINT;
+        case PixelFormat::R32G32B32_SINT:
+            return DXGI_FORMAT_R32G32B32_SINT;
+        case PixelFormat::R16G16B16A16_FLOAT:
+            return DXGI_FORMAT_R16G16B16A16_FLOAT;
+        case PixelFormat::R16G16B16A16_UNORM:
+            return DXGI_FORMAT_R16G16B16A16_UNORM;
+        case PixelFormat::R16G16B16A16_UINT:
+            return DXGI_FORMAT_R16G16B16A16_UINT;
+        case PixelFormat::R16G16B16A16_SNORM:
+            return DXGI_FORMAT_R16G16B16A16_SNORM;
+        case PixelFormat::R16G16B16A16_SINT:
+            return DXGI_FORMAT_R16G16B16A16_SINT;
+        case PixelFormat::R32G32_FLOAT:
+            return DXGI_FORMAT_R32G32_FLOAT;
+        case PixelFormat::R32G32_UINT:
+            return DXGI_FORMAT_R32G32_UINT;
+        case PixelFormat::R32G32_SINT:
+            return DXGI_FORMAT_R32G32_SINT;
+        case PixelFormat::R10G10B10A2_UNORM:
+            return DXGI_FORMAT_R10G10B10A2_UNORM;
+        case PixelFormat::R10G10B10A2_UINT:
+            return DXGI_FORMAT_R10G10B10A2_UINT;
+        case PixelFormat::R11G11B10_FLOAT:
+            return DXGI_FORMAT_R11G11B10_FLOAT;
+        case PixelFormat::R8G8B8A8_UNORM:
+            return DXGI_FORMAT_R8G8B8A8_UNORM;
+        case PixelFormat::R8G8B8A8_UNORM_SRGB:
+            return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+        case PixelFormat::R8G8B8A8_UINT:
+            return DXGI_FORMAT_R8G8B8A8_UINT;
+        case PixelFormat::R8G8B8A8_SNORM:
+            return DXGI_FORMAT_R8G8B8A8_SNORM;
+        case PixelFormat::R8G8B8A8_SINT:
+            return DXGI_FORMAT_R8G8B8A8_SINT;
+        case PixelFormat::R16G16_FLOAT:
+            return DXGI_FORMAT_R16G16_FLOAT;
+        case PixelFormat::R16G16_UNORM:
+            return DXGI_FORMAT_R16G16_UNORM;
+        case PixelFormat::R16G16_UINT:
+            return DXGI_FORMAT_R16G16_UINT;
+        case PixelFormat::R16G16_SNORM:
+            return DXGI_FORMAT_R16G16_SNORM;
+        case PixelFormat::R16G16_SINT:
+            return DXGI_FORMAT_R16G16_SINT;
+        case PixelFormat::D32_FLOAT:
+            return DXGI_FORMAT_D32_FLOAT;
+        case PixelFormat::R32_FLOAT:
+            return DXGI_FORMAT_R32_FLOAT;
+        case PixelFormat::R32_UINT:
+            return DXGI_FORMAT_R32_UINT;
+        case PixelFormat::R32_SINT:
+            return DXGI_FORMAT_R32_SINT;
+        case PixelFormat::D24_UNORM_S8_UINT:
+            return DXGI_FORMAT_D24_UNORM_S8_UINT;
+        case PixelFormat::R24_UNORM_X8_TYPELESS:
+            return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+        case PixelFormat::R8G8_UNORM:
+            return DXGI_FORMAT_R8G8_UNORM;
+        case PixelFormat::R8G8_UINT:
+            return DXGI_FORMAT_R8G8_UINT;
+        case PixelFormat::R8G8_SNORM:
+            return DXGI_FORMAT_R8G8_SNORM;
+        case PixelFormat::R8G8_SINT:
+            return DXGI_FORMAT_R8G8_SINT;
+        case PixelFormat::R16_FLOAT:
+            return DXGI_FORMAT_R16_FLOAT;
+        case PixelFormat::D16_UNORM:
+            return DXGI_FORMAT_D16_UNORM;
+        case PixelFormat::R16_UNORM:
+            return DXGI_FORMAT_R16_UNORM;
+        case PixelFormat::R16_UINT:
+            return DXGI_FORMAT_R16_UINT;
+        case PixelFormat::R16_SNORM:
+            return DXGI_FORMAT_R16_SNORM;
+        case PixelFormat::R16_SINT:
+            return DXGI_FORMAT_R16_SINT;
+        case PixelFormat::R8_UNORM:
+            return DXGI_FORMAT_R8_UNORM;
+        case PixelFormat::R8_UINT:
+            return DXGI_FORMAT_R8_UINT;
+        case PixelFormat::R8_SNORM:
+            return DXGI_FORMAT_R8_SNORM;
+        case PixelFormat::R8_SINT:
+            return DXGI_FORMAT_R8_SINT;
+        case PixelFormat::A8_UNORM:
+            return DXGI_FORMAT_A8_UNORM;
+        case PixelFormat::R1_UNORM:
+            return DXGI_FORMAT_R1_UNORM;
+        case PixelFormat::BC1_UNORM:
+            return DXGI_FORMAT_BC1_UNORM;
+        case PixelFormat::BC1_UNORM_SRGB:
+            return DXGI_FORMAT_BC1_UNORM_SRGB;
+        case PixelFormat::BC2_UNORM:
+            return DXGI_FORMAT_BC2_UNORM;
+        case PixelFormat::BC2_UNORM_SRGB:
+            return DXGI_FORMAT_BC2_UNORM_SRGB;
+        case PixelFormat::BC3_UNORM:
+            return DXGI_FORMAT_BC3_UNORM;
+        case PixelFormat::BC3_UNORM_SRGB:
+            return DXGI_FORMAT_BC3_UNORM_SRGB;
+        case PixelFormat::BC4_UNORM:
+            return DXGI_FORMAT_BC4_UNORM;
+        case PixelFormat::BC4_SNORM:
+            return DXGI_FORMAT_BC4_SNORM;
+        case PixelFormat::BC5_UNORM:
+            return DXGI_FORMAT_BC5_UNORM;
+        case PixelFormat::BC5_SNORM:
+            return DXGI_FORMAT_BC5_SNORM;
+        case PixelFormat::B5G6R5_UNORM:
+            return DXGI_FORMAT_B5G6R5_UNORM;
+        case PixelFormat::B5G5R5A1_UNORM:
+            return DXGI_FORMAT_B5G5R5A1_UNORM;
+        case PixelFormat::B8G8R8A8_UNORM:
+            return DXGI_FORMAT_B8G8R8A8_UNORM;
+        case PixelFormat::B8G8R8A8_UNORM_SRGB:
+            return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+        default:
+            SALVATION_FAIL();
+            return DXGI_FORMAT_UNKNOWN;
+        }
+    }
 }
 
 GpuDeviceHandle device::CreateDevice()
@@ -129,28 +463,6 @@ GpuDeviceHandle device::CreateDevice()
     return deviceHdl;
 }
 
-static D3D12_COMMAND_LIST_TYPE ToNativeCmdType(CommandType type)
-{
-    D3D12_COMMAND_LIST_TYPE cmdType;
-    switch(type)
-    {
-    case CommandType::Graphics:
-        cmdType = D3D12_COMMAND_LIST_TYPE_DIRECT;
-        break;
-    case CommandType::AsyncCompute:
-        cmdType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
-        break;
-    case CommandType::Copy:
-        cmdType = D3D12_COMMAND_LIST_TYPE_COPY;
-        break;
-    default:
-        cmdType = D3D12_COMMAND_LIST_TYPE_DIRECT;
-        SALVATION_ASSERT_MSG(false, "Invalid CommandType");
-    }
-
-    return cmdType;
-}
-
 CommandQueueHandle device::CreateCommandQueue(GpuDeviceHandle deviceHdl, CommandType type)
 {
     CommandQueueHandle cmdQueueHandle = Handle_NULL;
@@ -170,20 +482,6 @@ CommandQueueHandle device::CreateCommandQueue(GpuDeviceHandle deviceHdl, Command
     }
 
     return cmdQueueHandle;
-}
-
-static ID3D12CommandAllocator* CreateCommandAllocator(ID3D12Device* pDevice, D3D12_COMMAND_LIST_TYPE cmdType)
-{
-    ID3D12CommandAllocator* pCmdAlloc;
-    SALVATION_ASSERT_ALWAYS_EXEC(SUCCEEDED(pDevice->CreateCommandAllocator(cmdType, IID_PPV_ARGS(&pCmdAlloc))));
-    return pCmdAlloc;
-}
-
-static ID3D12CommandList* CreateCommandList(ID3D12Device* pDevice, ID3D12CommandAllocator* pCmdAllocator, D3D12_COMMAND_LIST_TYPE cmdType)
-{
-    ID3D12CommandList* pCmdList = nullptr;
-    SALVATION_ASSERT_ALWAYS_EXEC(SUCCEEDED(pDevice->CreateCommandList(0, cmdType, pCmdAllocator, nullptr, IID_PPV_ARGS(&pCmdList))));
-    return pCmdList;
 }
 
 bool device::CreateCommandBuffer(GpuDeviceHandle deviceHdl, CommandType type, CommandBuffer& outCmdBuffer)
@@ -263,36 +561,6 @@ SwapChainHandle device::CreateSwapChain(
     }
 
     return swapChainHdl;
-}
-
-static D3D12_TEXTURE_ADDRESS_MODE ToNativeAddressMode(SamplerAddressMode mode)
-{
-    switch(mode)
-    {
-    case SamplerAddressMode::Wrap:
-        return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    case SamplerAddressMode::Clamp:
-        return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-    default:
-        SALVATION_FAIL();
-        return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-    }
-}
-
-static D3D12_FILTER ToNativeFilter(SamplerFiltering filter)
-{
-    switch(filter)
-    {
-    case SamplerFiltering::Point:
-        return D3D12_FILTER_MIN_MAG_MIP_POINT;
-    case SamplerFiltering::Linear:
-        return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
-    case SamplerFiltering::Anisotropic:
-        return D3D12_FILTER_ANISOTROPIC;
-    default:
-        SALVATION_FAIL();
-        return D3D12_FILTER_MIN_MAG_MIP_POINT;
-    }
 }
 
 Shader device::CreateShader(GpuDeviceHandle /*deviceHdl*/, const char* pFilePath)
@@ -381,279 +649,6 @@ ShaderResourceLayoutHandle device::CreateShaderResourceLayout(GpuDeviceHandle de
     return Handle_NULL;
 }
 
-static D3D12_BLEND_OP ToNativeBlendOperation(BlendOperation blendOp)
-{
-    switch(blendOp)
-    {
-    case BlendOperation::ADD:
-        return D3D12_BLEND_OP_ADD;
-    case BlendOperation::SUBTRACT:
-        return D3D12_BLEND_OP_SUBTRACT;
-    case BlendOperation::REV_SUBTRACT:
-        return D3D12_BLEND_OP_REV_SUBTRACT;
-    case BlendOperation::MIN:
-        return D3D12_BLEND_OP_MIN;
-    case BlendOperation::MAX:
-        return D3D12_BLEND_OP_MAX;
-    default:
-        SALVATION_FAIL();
-        return D3D12_BLEND_OP_ADD;
-    }
-}
-
-static D3D12_BLEND ToNativeBlend(BlendValue value)
-{
-    switch(value)
-    {
-    case BlendValue::ZERO:
-        return D3D12_BLEND_ZERO;
-    case BlendValue::ONE:
-        return D3D12_BLEND_ONE;
-    case BlendValue::SRC_COLOR:
-        return D3D12_BLEND_SRC_COLOR;
-    case BlendValue::INV_SRC_COLOR:
-        return D3D12_BLEND_INV_SRC_COLOR;
-    case BlendValue::SRC_ALPHA:
-        return D3D12_BLEND_SRC_ALPHA;
-    case BlendValue::INV_SRC_ALPHA:
-        return D3D12_BLEND_INV_SRC_ALPHA;
-    case BlendValue::DEST_ALPHA:
-        return D3D12_BLEND_DEST_ALPHA;
-    case BlendValue::INV_DEST_ALPHA:
-        return D3D12_BLEND_INV_DEST_ALPHA;
-    case BlendValue::DEST_COLOR:
-        return D3D12_BLEND_DEST_COLOR;
-    case BlendValue::INV_DEST_COLOR:
-        return D3D12_BLEND_INV_DEST_COLOR;
-    default:
-        SALVATION_FAIL();
-        return D3D12_BLEND_ZERO;
-    }
-}
-
-static D3D12_COLOR_WRITE_ENABLE ToNativeWriteMask(bool colorWrite, bool alphaWrite)
-{
-    D3D12_COLOR_WRITE_ENABLE writeMask = static_cast<D3D12_COLOR_WRITE_ENABLE>(colorWrite ?
-        (D3D12_COLOR_WRITE_ENABLE_RED | D3D12_COLOR_WRITE_ENABLE_GREEN | D3D12_COLOR_WRITE_ENABLE_BLUE) : 0);
-    writeMask = static_cast<D3D12_COLOR_WRITE_ENABLE>(writeMask | (alphaWrite ? D3D12_COLOR_WRITE_ENABLE_ALPHA : 0));
-
-    return writeMask;
-}
-
-static D3D12_CULL_MODE ToNativeCullMode(CullMode cullMode)
-{
-    switch(cullMode)
-    {
-    case CullMode::None:
-        return D3D12_CULL_MODE_NONE;
-    case CullMode::Front:
-        return D3D12_CULL_MODE_FRONT;
-    case CullMode::Back:
-        return D3D12_CULL_MODE_BACK;
-    default:
-        SALVATION_FAIL();
-        return D3D12_CULL_MODE_NONE;
-    }
-}
-
-static D3D12_COMPARISON_FUNC ToNativeComparisonFunc(ComparisonFunction func)
-{
-    switch(func)
-    {
-    case ComparisonFunction::NEVER:
-        return D3D12_COMPARISON_FUNC_NEVER;
-    case ComparisonFunction::LESS:
-        return D3D12_COMPARISON_FUNC_LESS;
-    case ComparisonFunction::EQUAL:
-        return D3D12_COMPARISON_FUNC_EQUAL;
-    case ComparisonFunction::LESS_EQUAL:
-        return D3D12_COMPARISON_FUNC_LESS_EQUAL;
-    case ComparisonFunction::GREATER:
-        return D3D12_COMPARISON_FUNC_GREATER;
-    case ComparisonFunction::NOT_EQUAL:
-        return D3D12_COMPARISON_FUNC_NOT_EQUAL;
-    case ComparisonFunction::GREATER_EQUAL:
-        return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
-    case ComparisonFunction::ALWAYS:
-        return D3D12_COMPARISON_FUNC_ALWAYS;
-    default:
-        SALVATION_FAIL();
-        return D3D12_COMPARISON_FUNC_ALWAYS;
-    }
-}
-
-static D3D12_STENCIL_OP ToNativeStencilOp(StencilOperation stencilOp)
-{
-    switch(stencilOp)
-    {
-    case StencilOperation::KEEP:
-        return D3D12_STENCIL_OP_KEEP;
-    case StencilOperation::ZERO:
-        return D3D12_STENCIL_OP_ZERO;
-    case StencilOperation::REPLACE:
-        return D3D12_STENCIL_OP_REPLACE;
-    case StencilOperation::INCR_SAT:
-        return D3D12_STENCIL_OP_INCR_SAT;
-    case StencilOperation::DECR_SAT:
-        return D3D12_STENCIL_OP_DECR_SAT;
-    case StencilOperation::INVERT:
-        return D3D12_STENCIL_OP_INVERT;
-    case StencilOperation::INCR:
-        return D3D12_STENCIL_OP_INCR;
-    case StencilOperation::DECR:
-        return D3D12_STENCIL_OP_DECR;
-    default:
-        SALVATION_FAIL();
-        return D3D12_STENCIL_OP_KEEP;
-    }
-}
-
-/*
-enum class PixelFormat
-        {
-            
-            EnumCount
-        };
-*/
-
-static DXGI_FORMAT ToNativeFormat(PixelFormat format)
-{
-    switch (format)
-    {
-    case PixelFormat::Unknown:
-        return DXGI_FORMAT_UNKNOWN;
-    case PixelFormat::R32G32B32A32_FLOAT:
-        return DXGI_FORMAT_R32G32B32A32_FLOAT;
-    case PixelFormat::R32G32B32A32_UINT:
-        return DXGI_FORMAT_R32G32B32A32_UINT;
-    case PixelFormat::R32G32B32A32_SINT:
-        return DXGI_FORMAT_R32G32B32A32_SINT;
-    case PixelFormat::R32G32B32_FLOAT:
-        return DXGI_FORMAT_R32G32B32_FLOAT;
-    case PixelFormat::R32G32B32_UINT:
-        return DXGI_FORMAT_R32G32B32_UINT;
-    case PixelFormat::R32G32B32_SINT:
-        return DXGI_FORMAT_R32G32B32_SINT;
-    case PixelFormat::R16G16B16A16_FLOAT:
-        return DXGI_FORMAT_R16G16B16A16_FLOAT;
-    case PixelFormat::R16G16B16A16_UNORM:
-        return DXGI_FORMAT_R16G16B16A16_UNORM;
-    case PixelFormat::R16G16B16A16_UINT:
-        return DXGI_FORMAT_R16G16B16A16_UINT;
-    case PixelFormat::R16G16B16A16_SNORM:
-        return DXGI_FORMAT_R16G16B16A16_SNORM;
-    case PixelFormat::R16G16B16A16_SINT:
-        return DXGI_FORMAT_R16G16B16A16_SINT;
-    case PixelFormat::R32G32_FLOAT:
-        return DXGI_FORMAT_R32G32_FLOAT;
-    case PixelFormat::R32G32_UINT:
-        return DXGI_FORMAT_R32G32_UINT;
-    case PixelFormat::R32G32_SINT:
-        return DXGI_FORMAT_R32G32_SINT;
-    case PixelFormat::R10G10B10A2_UNORM:
-        return DXGI_FORMAT_R10G10B10A2_UNORM;
-    case PixelFormat::R10G10B10A2_UINT:
-        return DXGI_FORMAT_R10G10B10A2_UINT;
-    case PixelFormat::R11G11B10_FLOAT:
-        return DXGI_FORMAT_R11G11B10_FLOAT;
-    case PixelFormat::R8G8B8A8_UNORM:
-        return DXGI_FORMAT_R8G8B8A8_UNORM;
-    case PixelFormat::R8G8B8A8_UNORM_SRGB:
-        return DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-    case PixelFormat::R8G8B8A8_UINT:
-        return DXGI_FORMAT_R8G8B8A8_UINT;
-    case PixelFormat::R8G8B8A8_SNORM:
-        return DXGI_FORMAT_R8G8B8A8_SNORM;
-    case PixelFormat::R8G8B8A8_SINT:
-        return DXGI_FORMAT_R8G8B8A8_SINT;
-    case PixelFormat::R16G16_FLOAT:
-        return DXGI_FORMAT_R16G16_FLOAT;
-    case PixelFormat::R16G16_UNORM:
-        return DXGI_FORMAT_R16G16_UNORM;
-    case PixelFormat::R16G16_UINT:
-        return DXGI_FORMAT_R16G16_UINT;
-    case PixelFormat::R16G16_SNORM:
-        return DXGI_FORMAT_R16G16_SNORM;
-    case PixelFormat::R16G16_SINT:
-        return DXGI_FORMAT_R16G16_SINT;
-    case PixelFormat::D32_FLOAT:
-        return DXGI_FORMAT_D32_FLOAT;
-    case PixelFormat::R32_FLOAT:
-        return DXGI_FORMAT_R32_FLOAT;
-    case PixelFormat::R32_UINT:
-        return DXGI_FORMAT_R32_UINT;
-    case PixelFormat::R32_SINT:
-        return DXGI_FORMAT_R32_SINT;
-    case PixelFormat::D24_UNORM_S8_UINT:
-        return DXGI_FORMAT_D24_UNORM_S8_UINT;
-    case PixelFormat::R24_UNORM_X8_TYPELESS:
-        return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-    case PixelFormat::R8G8_UNORM:
-        return DXGI_FORMAT_R8G8_UNORM;
-    case PixelFormat::R8G8_UINT:
-        return DXGI_FORMAT_R8G8_UINT;
-    case PixelFormat::R8G8_SNORM:
-        return DXGI_FORMAT_R8G8_SNORM;
-    case PixelFormat::R8G8_SINT:
-        return DXGI_FORMAT_R8G8_SINT;
-    case PixelFormat::R16_FLOAT:
-        return DXGI_FORMAT_R16_FLOAT;
-    case PixelFormat::D16_UNORM:
-        return DXGI_FORMAT_D16_UNORM;
-    case PixelFormat::R16_UNORM:
-        return DXGI_FORMAT_R16_UNORM;
-    case PixelFormat::R16_UINT:
-        return DXGI_FORMAT_R16_UINT;
-    case PixelFormat::R16_SNORM:
-        return DXGI_FORMAT_R16_SNORM;
-    case PixelFormat::R16_SINT:
-        return DXGI_FORMAT_R16_SINT;
-    case PixelFormat::R8_UNORM:
-        return DXGI_FORMAT_R8_UNORM;
-    case PixelFormat::R8_UINT:
-        return DXGI_FORMAT_R8_UINT;
-    case PixelFormat::R8_SNORM:
-        return DXGI_FORMAT_R8_SNORM;
-    case PixelFormat::R8_SINT:
-        return DXGI_FORMAT_R8_SINT;
-    case PixelFormat::A8_UNORM:
-        return DXGI_FORMAT_A8_UNORM;
-    case PixelFormat::R1_UNORM:
-        return DXGI_FORMAT_R1_UNORM;
-    case PixelFormat::BC1_UNORM:
-        return DXGI_FORMAT_BC1_UNORM;
-    case PixelFormat::BC1_UNORM_SRGB:
-        return DXGI_FORMAT_BC1_UNORM_SRGB;
-    case PixelFormat::BC2_UNORM:
-        return DXGI_FORMAT_BC2_UNORM;
-    case PixelFormat::BC2_UNORM_SRGB:
-        return DXGI_FORMAT_BC2_UNORM_SRGB;
-    case PixelFormat::BC3_UNORM:
-        return DXGI_FORMAT_BC3_UNORM;
-    case PixelFormat::BC3_UNORM_SRGB:
-        return DXGI_FORMAT_BC3_UNORM_SRGB;
-    case PixelFormat::BC4_UNORM:
-        return DXGI_FORMAT_BC4_UNORM;
-    case PixelFormat::BC4_SNORM:
-        return DXGI_FORMAT_BC4_SNORM;
-    case PixelFormat::BC5_UNORM:
-        return DXGI_FORMAT_BC5_UNORM;
-    case PixelFormat::BC5_SNORM:
-        return DXGI_FORMAT_BC5_SNORM;
-    case PixelFormat::B5G6R5_UNORM:
-        return DXGI_FORMAT_B5G6R5_UNORM;
-    case PixelFormat::B5G5R5A1_UNORM:
-        return DXGI_FORMAT_B5G5R5A1_UNORM;
-    case PixelFormat::B8G8R8A8_UNORM:
-        return DXGI_FORMAT_B8G8R8A8_UNORM;
-    case PixelFormat::B8G8R8A8_UNORM_SRGB:
-        return DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
-    default:
-        SALVATION_FAIL();
-        return DXGI_FORMAT_UNKNOWN;
-    }
-}
-
 GfxPipelineHandle device::CreateGraphicsPipeline(GpuDeviceHandle deviceHdl, const GfxPipelineDesc& desc)
 {
     ID3D12RootSignature* pRootSig;
@@ -727,7 +722,7 @@ GfxPipelineHandle device::CreateGraphicsPipeline(GpuDeviceHandle deviceHdl, cons
         d3dDesc.RTVFormats[rtIndex] = ToNativeFormat(desc.RenderTargetFormats[rtIndex]);
     }
 
-    const uint32_t cInputElementCount = desc.InputLayout.Elements.Size();
+    const uint32_t cInputElementCount = static_cast<uint32_t>(desc.InputLayout.Elements.Size());
     d3dDesc.InputLayout.NumElements = cInputElementCount;
 
     data::StaticArray<D3D12_INPUT_ELEMENT_DESC> d3dElements(cInputElementCount);
@@ -738,39 +733,11 @@ GfxPipelineHandle device::CreateGraphicsPipeline(GpuDeviceHandle deviceHdl, cons
         
     }
 
-    
-
 #ifdef _DEBUG
     d3dDesc.Flags = D3D12_PIPELINE_STATE_FLAG_TOOL_DEBUG;
 #else 
     d3dDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 #endif
-
-    /*
-    struct DepthStencilStateDesc
-    {
-        StencilOperationDesc FrontFaceStencil;
-        StencilOperationDesc BackFaceStencil;
-        ComparisonFunction DepthFunction;
-        uint8_t StencilReadMask;
-        uint8_t StencilWriteMask;
-        bool IsDepthTestEnabled;
-        bool IsDepthWriteEnabled;
-        bool IsStencilEnabled;
-    };
-
-    typedef struct D3D12_DEPTH_STENCIL_DESC
-    {
-        BOOL DepthEnable;
-        D3D12_DEPTH_WRITE_MASK DepthWriteMask;
-        D3D12_COMPARISON_FUNC DepthFunc;
-        BOOL StencilEnable;
-        UINT8 StencilReadMask;
-        UINT8 StencilWriteMask;
-        D3D12_DEPTH_STENCILOP_DESC FrontFace;
-        D3D12_DEPTH_STENCILOP_DESC BackFace;
-    } 	D3D12_DEPTH_STENCIL_DESC;
-    */
 
     return Handle_NULL;
 }
@@ -823,7 +790,7 @@ void device::DestroyGfxPipeline(GfxPipelineHandle /*hdl*/)
 
 }
 
-void device::DestroyComputePipeline(ComputePipelineHandle /*hdl*/);
+void device::DestroyComputePipeline(ComputePipelineHandle /*hdl*/)
 {
 
 }

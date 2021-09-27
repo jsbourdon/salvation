@@ -15,7 +15,7 @@ namespace salvation
         public:
 
             StaticArray();
-            StaticArray(uint32_t size);
+            StaticArray(size_t size);
             StaticArray(StaticArray&& other);
             StaticArray(const StaticArray& other) = delete;
 
@@ -23,7 +23,7 @@ namespace salvation
 
             ValueType*          Data();
             const ValueType*    Data() const;
-            uint32_t            Size() const { return m_size; }
+            size_t              Size() const { return m_size; }
 
             ValueType&          operator[](size_t index);
             const ValueType&    operator[](size_t index) const;
@@ -32,7 +32,7 @@ namespace salvation
         private:
 
             ValueType*  m_pData;
-            uint32_t    m_size;
+            size_t      m_size;
         };
     }
 }
